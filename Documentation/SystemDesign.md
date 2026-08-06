@@ -1,34 +1,123 @@
-# IssuePortal - System Design
+# 2. Frontend
 
-## 1. System Architecture
+## Technology
 
-IssuePortal follows a three-layer architecture:
+React + TypeScript + Tailwind CSS
 
-1. Frontend
-2. Backend
-3. Database
+## Responsibilities
 
-## Frontend Responsibilities (React TypeScript Tailwind CSS)
+The frontend is responsible for:
 
-
-- Display user interface
-- Handle user interactions
-- Communicate with backend API
-- Manage application state
+- Providing the user interface
+- Handling user interactions
+- Sending requests to the backend API
+- Displaying information received from the backend
 
 
-## Backend Responsibilities (C# ASP.NET Core Web API)
+
+---
+
+# 3. Backend
+
+## Technology
+
+C# + ASP.NET Core Web API
+
+## Responsibilities
+
+The backend is responsible for:
+
+- Handling HTTP requests
+- Implementing business logic
+- Authenticating users
+- Validating data
+- Communicating with the database
+
+---
+
+# 4. Database
+
+## Technology
+
+PostgreSQL
+
+## Responsibilities
+
+The database is responsible for:
+
+- Storing application data
+- Managing relationships between data
+- Ensuring data consistency
 
 
-- Handle HTTP requests
-- Implement business logic
-- Authenticate users
-- Validate data
-- Communicate with database
+---
+
+# 5. Main Entities
+
+## User
+
+Represents a person using the system.
+
+Properties:
+
+- Id
+- Name
+- Email
+- Password
+- Role
 
 
-## Database Responsibilities (PostgreSQL)
+## Project
 
-- Store application data
-- Maintain relationships
-- Ensure data consistency
+Represents a software project.
+
+Properties:
+
+- Id
+- Name
+- Description
+- CreatedDate
+
+
+## Issue
+
+Represents a task or bug.
+
+Properties:
+
+- Id
+- Title
+- Description
+- Status
+- Priority
+- CreatedDate
+
+
+## Comment
+
+Represents a discussion message.
+
+Properties:
+
+- Id
+- Message
+- CreatedDate
+
+
+---
+
+# 6. Relationships
+
+## User - Project
+
+One user can participate in many projects.
+
+
+## Project - Issue
+
+One project can contain many issues.
+
+
+## Issue - Comment
+
+One issue can contain many comments.
