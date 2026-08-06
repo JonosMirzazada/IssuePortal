@@ -1,3 +1,15 @@
+# IssuePortal - System Design
+
+# 1. System Architecture
+
+IssuePortal follows a three-layer architecture:
+
+1. Frontend
+2. Backend
+3. Database
+
+---
+
 # 2. Frontend
 
 ## Technology
