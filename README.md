@@ -1,4 +1,5 @@
 # IssueHub
+Status: Under utveckling
 
 Ett system för att hantera projekt och uppgifter.
 
