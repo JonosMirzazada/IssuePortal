@@ -1,8 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -14,25 +14,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/api/issues", () =>
-{
-    return new[]
-    {
-        new
-        {
-            Id = 1,
-            Title = "Login fungerar inte",
-            Status = "Open",
-            Priority = "High"
-        },
-        new
-        {
-            Id = 2,
-            Title = "Dashboard behöver fixas",
-            Status = "In Progress",
-            Priority = "Medium"
-        }
-    };
-});
+app.MapControllers();
 
 app.Run();
