@@ -1,6 +1,23 @@
 @IssuePortal.Api_HostAddress = http://localhost:5126
 
-GET {{IssuePortal.Api_HostAddress}}/weatherforecast/
+### Get all issues
+GET {{IssuePortal.Api_HostAddress}}/api/issues
 Accept: application/json
 
 ###
+
+### Get issue by ID
+GET {{IssuePortal.Api_HostAddress}}/api/issues/1
+Accept: application/json
+
+###
+
+### Create a new issue
+POST {{IssuePortal.Api_HostAddress}}/api/issues
+Content-Type: application/json
+
+{
+  "title": "Login fungerar inte",
+  "description": "Användaren kan inte logga in.",
+  "priority": "High"
+}
