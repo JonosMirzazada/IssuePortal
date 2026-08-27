@@ -11,4 +11,9 @@ public class Issue
     public string Status { get; set; } = "Open";
 
     public string Priority { get; set; } = "Medium";
+
+     public DateTime CreatedAt { get; set; }
+     public DateTime UpdatedAt { get; set; }
+     public int ProjectId { get; set; }
+     public int? AssignedUserId { get; set; }
 }
