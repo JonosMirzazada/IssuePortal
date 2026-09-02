@@ -1,5 +1,6 @@
 using IssuePortal.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using IssuePortal.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,11 @@ builder.Services.AddDbContext<IssuePortalDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IssueService>();
+
 builder.Services.AddControllers();
+
+
 
 var app = builder.Build();
 
