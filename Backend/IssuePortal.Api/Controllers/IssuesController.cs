@@ -1,4 +1,5 @@
 using IssuePortal.Api.Models;
+using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IssuePortal.Api.Controllers;
@@ -7,69 +8,18 @@ namespace IssuePortal.Api.Controllers;
 [Route("api/[controller]")]
 public class IssuesController : ControllerBase
 {
+    private readonly IssueService _issueService;
+
+    public IssuesController(IssueService issueService)
+    {
+        _issueService = issueService;
+    }
+
     [HttpGet]
-    public IActionResult GetIssues()
+    public async Task<IActionResult> GetIssues()
     {
-        return Ok(new[]
-        {
-            new Issue
-            {
-                Id = 1,
-                Title = "Login fungerar inte",
-                Description = "Användaren kan inte logga in.",
-                Status = "Open",
-                Priority = "High"
-            },
-            new Issue
-            {
-                Id = 2,
-                Title = "Dashboard behöver fixas",
-                Description = "Dashboard laddar inte korrekt.",
-                Status = "In Progress",
-                Priority = "Medium"
-            }
-        });
-    }
+        var issues = await _issueService.GetAllIssuesAsync();
 
-    [HttpGet("{id}")]
-    public IActionResult GetIssueById(int id)
-    {
-        if (id == 1)
-        {
-            return Ok(new Issue
-            {
-                Id = 1,
-                Title = "Login fungerar inte",
-                Description = "Användaren kan inte logga in.",
-                Status = "Open",
-                Priority = "High"
-            });
-        }
-
-        if (id == 2)
-        {
-            return Ok(new Issue
-            {
-                Id = 2,
-                Title = "Dashboard behöver fixas",
-                Description = "Dashboard laddar inte korrekt.",
-                Status = "In Progress",
-                Priority = "Medium"
-            });
-        }
-
-        return NotFound();
-    }
-
-    [HttpPost]
-    public IActionResult CreateIssue(Issue issue)
-    {
-        issue.Id = 3;
-
-        return CreatedAtAction(
-            nameof(GetIssueById),
-            new { id = issue.Id },
-            issue
-        );
+        return Ok(issues);
     }
 }
