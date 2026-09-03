@@ -22,4 +22,29 @@ public class IssuesController : ControllerBase
 
         return Ok(issues);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateIssue(Issue issue)
+    {
+        var createdIssue = await _issueService.CreateIssueAsync(issue);
+
+        return CreatedAtAction(
+            nameof(GetIssueById),
+            new { id = createdIssue.Id },
+            createdIssue
+        );
+    }
+
+    [HttpGet("{id}")]
+public async Task<IActionResult> GetIssueById(int id)
+{
+    var issue = await _issueService.GetIssueByIdAsync(id);
+
+    if (issue == null)
+    {
+        return NotFound();
+    }
+
+    return Ok(issue);
+}
 }
