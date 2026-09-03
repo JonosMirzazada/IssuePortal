@@ -33,4 +33,26 @@ public class IssueService
 
         return issue;
     }
+
+    public async Task<Issue?> UpdateIssueAsync(int id, Issue issue)
+    {
+        var existingIssue = await _context.Issues.FindAsync(id);
+
+        if (existingIssue == null)
+        {
+            return null;
+        }
+
+        existingIssue.Title = issue.Title;
+        existingIssue.Description = issue.Description;
+        existingIssue.Status = issue.Status;
+        existingIssue.Priority = issue.Priority;
+        existingIssue.ProjectId = issue.ProjectId;
+        existingIssue.AssignedUserId = issue.AssignedUserId;
+        existingIssue.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return existingIssue;
+    }
 }
