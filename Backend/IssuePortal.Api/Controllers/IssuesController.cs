@@ -48,6 +48,20 @@ public async Task<IActionResult> UpdateIssue(int id, Issue issue)
     return Ok(updatedIssue);
 }
 
+[HttpDelete("{id}")]
+public async Task<IActionResult> DeleteIssue(int id)
+{
+    var deleted = await _issueService.DeleteIssueAsync(id);
+
+    if (!deleted)
+    {
+        return NotFound();
+    }
+
+    return NoContent();
+}
+
+
     [HttpGet("{id}")]
 public async Task<IActionResult> GetIssueById(int id)
 {

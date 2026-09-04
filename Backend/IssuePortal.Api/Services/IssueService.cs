@@ -55,4 +55,19 @@ public class IssueService
 
         return existingIssue;
     }
+    public async Task<bool> DeleteIssueAsync(int id)
+{
+    var issue = await _context.Issues.FindAsync(id);
+
+    if (issue == null)
+    {
+        return false;
+    }
+
+    _context.Issues.Remove(issue);
+
+    await _context.SaveChangesAsync();
+
+    return true;
+}
 }
