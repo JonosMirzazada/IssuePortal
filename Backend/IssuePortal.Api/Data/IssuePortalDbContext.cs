@@ -11,4 +11,6 @@ public class IssuePortalDbContext : DbContext
     }
 
     public DbSet<Issue> Issues { get; set; }
+
+    public DbSet<Project> Projects { get; set; }
 }

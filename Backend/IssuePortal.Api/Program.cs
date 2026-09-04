@@ -13,6 +13,7 @@ builder.Services.AddDbContext<IssuePortalDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IssueService>();
+builder.Services.AddScoped<ProjectService>();
 
 builder.Services.AddControllers();
 

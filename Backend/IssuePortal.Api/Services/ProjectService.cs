@@ -1,0 +1,20 @@
+using IssuePortal.Api.Data;
+using IssuePortal.Api.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace IssuePortal.Api.Services;
+
+public class ProjectService
+{
+    private readonly IssuePortalDbContext _context;
+
+    public ProjectService(IssuePortalDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<List<Project>> GetAllProjectsAsync()
+    {
+        return await _context.Projects.ToListAsync();
+    }
+}
