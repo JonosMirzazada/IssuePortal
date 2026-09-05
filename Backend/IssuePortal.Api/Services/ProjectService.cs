@@ -17,4 +17,14 @@ public class ProjectService
     {
         return await _context.Projects.ToListAsync();
     }
+
+    public async Task<Project> CreateProjectAsync(Project project)
+{
+    project.CreatedAt = DateTime.UtcNow;
+
+    _context.Projects.Add(project);
+    await _context.SaveChangesAsync();
+
+    return project;
+}
 }

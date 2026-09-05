@@ -1,5 +1,6 @@
-    using IssuePortal.Api.Services;
+using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using IssuePortal.Api.Models;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -21,4 +22,15 @@ public class ProjectsController : ControllerBase
 
         return Ok(projects);
     }
+    [HttpPost]
+public async Task<IActionResult> CreateProject(Project project)
+{
+    var createdProject = await _projectService.CreateProjectAsync(project);
+
+    return CreatedAtAction(
+        nameof(GetProjects),
+        null,
+        createdProject
+    );
+}
 }
