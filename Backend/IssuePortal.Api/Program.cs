@@ -14,6 +14,7 @@ builder.Services.AddDbContext<IssuePortalDbContext>(options =>
 
 builder.Services.AddScoped<IssueService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddControllers();
 
