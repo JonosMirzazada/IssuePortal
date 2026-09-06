@@ -27,4 +27,42 @@ public class ProjectService
 
     return project;
 }
+public async Task<Project?> GetProjectByIdAsync(int id)
+{
+    return await _context.Projects.FindAsync(id);
+}
+
+public async Task<Project?> UpdateProjectAsync(int id, Project project)
+{
+    var existingProject = await _context.Projects.FindAsync(id);
+
+    if (existingProject == null)
+    {
+        return null;
+    }
+
+    existingProject.Name = project.Name;
+    existingProject.Description = project.Description;
+
+    await _context.SaveChangesAsync();
+
+    return existingProject;
+}
+
+public async Task<bool> DeleteProjectAsync(int id)
+{
+    var project = await _context.Projects.FindAsync(id);
+
+    if (project == null)
+    {
+        return false;
+    }
+
+    _context.Projects.Remove(project);
+
+    await _context.SaveChangesAsync();
+
+    return true;
+}
+
 }
