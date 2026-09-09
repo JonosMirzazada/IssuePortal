@@ -33,4 +33,36 @@ public class CommentService
 
         return comment;
     }
+
+    public async Task<Comment?> UpdateCommentAsync(int id, Comment comment)
+{
+    var existingComment = await _context.Comments.FindAsync(id);
+
+    if (existingComment == null)
+    {
+        return null;
+    }
+
+    existingComment.Content = comment.Content;
+
+    await _context.SaveChangesAsync();
+
+    return existingComment;
+}
+
+public async Task<bool> DeleteCommentAsync(int id)
+{
+    var comment = await _context.Comments.FindAsync(id);
+
+    if (comment == null)
+    {
+        return false;
+    }
+
+    _context.Comments.Remove(comment);
+
+    await _context.SaveChangesAsync();
+
+    return true;
+}
 }
