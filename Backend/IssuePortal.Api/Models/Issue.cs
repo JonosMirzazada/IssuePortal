@@ -11,6 +11,7 @@ public class Issue
     public string Status { get; set; } = "Open";
 
     public string Priority { get; set; } = "Medium";
+    public List<Comment> Comments { get; set; } = new();
 
      public DateTime CreatedAt { get; set; }
      public DateTime UpdatedAt { get; set; }
