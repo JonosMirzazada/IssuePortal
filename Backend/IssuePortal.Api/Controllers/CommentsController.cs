@@ -1,3 +1,4 @@
+
 using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -37,9 +38,9 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateComment(Comment comment)
+    public async Task<IActionResult> CreateComment(CommentDto dto)
     {
-        var createdComment = await _commentService.CreateCommentAsync(comment);
+        var createdComment = await _commentService.CreateCommentAsync(dto);
 
         return CreatedAtAction(
             nameof(GetCommentById),

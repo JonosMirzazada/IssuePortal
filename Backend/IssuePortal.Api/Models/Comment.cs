@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace IssuePortal.Api.Models;
@@ -6,6 +7,8 @@ public class Comment
 {
     public int Id { get; set; }
 
+    [Required]
+    [StringLength(1000)]
     public string Content { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }

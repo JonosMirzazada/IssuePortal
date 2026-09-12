@@ -1,3 +1,4 @@
+
 using IssuePortal.Api.Data;
 using IssuePortal.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -46,9 +47,15 @@ public class CommentService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<CommentDto> CreateCommentAsync(Comment comment)
+    public async Task<CommentDto> CreateCommentAsync(CommentDto dto)
     {
-        comment.CreatedAt = DateTime.UtcNow;
+        var comment = new Comment
+        {
+            Content = dto.Content,
+            IssueId = dto.IssueId,
+            UserId = dto.UserId,
+            CreatedAt = DateTime.UtcNow
+        };
 
         _context.Comments.Add(comment);
 
