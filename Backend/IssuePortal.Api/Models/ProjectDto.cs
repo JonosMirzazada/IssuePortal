@@ -1,6 +1,6 @@
 namespace IssuePortal.Api.Models;
 
-public class Project
+public class ProjectDto
 {
     public int Id { get; set; }
 
@@ -10,5 +10,5 @@ public class Project
 
     public DateTime CreatedAt { get; set; }
 
-    public List<Issue> Issues { get; set; } = new();
+    public List<ProjectIssueDto> Issues { get; set; } = new();
 }

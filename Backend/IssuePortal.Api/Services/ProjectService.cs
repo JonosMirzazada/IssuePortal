@@ -27,9 +27,32 @@ public class ProjectService
 
     return project;
 }
-public async Task<Project?> GetProjectByIdAsync(int id)
+public async Task<ProjectDto?> GetProjectByIdAsync(int id)
 {
-    return await _context.Projects.FindAsync(id);
+    var project = await _context.Projects
+        .Include(p => p.Issues)
+        .FirstOrDefaultAsync(p => p.Id == id);
+
+    if (project == null)
+    {
+        return null;
+    }
+
+    return new ProjectDto
+    {
+        Id = project.Id,
+        Name = project.Name,
+        Description = project.Description,
+        CreatedAt = project.CreatedAt,
+
+        Issues = project.Issues.Select(i => new ProjectIssueDto
+        {
+            Id = i.Id,
+            Title = i.Title,
+            Status = i.Status,
+            Priority = i.Priority
+        }).ToList()
+    };
 }
 
 public async Task<Project?> UpdateProjectAsync(int id, Project project)
