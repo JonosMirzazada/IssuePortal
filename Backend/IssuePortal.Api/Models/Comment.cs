@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
 namespace IssuePortal.Api.Models;
 
 public class Comment
@@ -5,12 +7,16 @@ public class Comment
     public int Id { get; set; }
 
     public string Content { get; set; } = string.Empty;
-    public Issue Issue { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }
 
     public int IssueId { get; set; }
-    public User User { get; set; } = null!;
+
+    [ValidateNever]
+    public Issue? Issue { get; set; }
 
     public int UserId { get; set; }
+
+    [ValidateNever]
+    public User? User { get; set; }
 }
