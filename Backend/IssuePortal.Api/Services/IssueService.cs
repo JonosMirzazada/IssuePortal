@@ -1,3 +1,4 @@
+
 using IssuePortal.Api.Data;
 using IssuePortal.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,42 @@ public class IssueService
         return await _context.Issues.ToListAsync();
     }
 
-    public async Task<Issue?> GetIssueByIdAsync(int id)
+ public async Task<IssueDto?> GetIssueByIdAsync(int id)
+{
+    var issue = await _context.Issues
+        .Include(i => i.Comments)
+        .ThenInclude(c => c.User)
+        .FirstOrDefaultAsync(i => i.Id == id);
+
+    if (issue == null)
     {
-        return await _context.Issues.FindAsync(id);
+        return null;
     }
 
+    return new IssueDto
+    {
+        Id = issue.Id,
+        Title = issue.Title,
+        Description = issue.Description,
+        Status = issue.Status,
+        Priority = issue.Priority,
+        CreatedAt = issue.CreatedAt,
+        UpdatedAt = issue.UpdatedAt,
+        ProjectId = issue.ProjectId,
+        AssignedUserId = issue.AssignedUserId,
+
+        Comments = issue.Comments.Select(c => new CommentDto
+        {
+            Id = c.Id,
+            Content = c.Content,
+            CreatedAt = c.CreatedAt,
+            IssueId = c.IssueId,
+            IssueTitle = issue.Title,
+            UserId = c.UserId,
+            UserName = c.User?.Name ?? string.Empty
+        }).ToList()
+    };
+}
     public async Task<Issue> CreateIssueAsync(Issue issue)
     {
         issue.CreatedAt = DateTime.UtcNow;
@@ -55,19 +87,20 @@ public class IssueService
 
         return existingIssue;
     }
+
     public async Task<bool> DeleteIssueAsync(int id)
-{
-    var issue = await _context.Issues.FindAsync(id);
-
-    if (issue == null)
     {
-        return false;
+        var issue = await _context.Issues.FindAsync(id);
+
+        if (issue == null)
+        {
+            return false;
+        }
+
+        _context.Issues.Remove(issue);
+
+        await _context.SaveChangesAsync();
+
+        return true;
     }
-
-    _context.Issues.Remove(issue);
-
-    await _context.SaveChangesAsync();
-
-    return true;
-}
 }
