@@ -13,19 +13,58 @@ public class UserService
         _context = context;
     }
 
-    public async Task<List<User>> GetAllUsersAsync()
+    public async Task<List<UserDto>> GetAllUsersAsync()
     {
-        return await _context.Users.ToListAsync();
+        var users = await _context.Users
+            .Include(u => u.AssignedIssues)
+            .ToListAsync();
+
+        return users.Select(user => new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+
+            AssignedIssues = user.AssignedIssues.Select(i => new UserIssueDto
+            {
+                Id = i.Id,
+                Title = i.Title,
+                Status = i.Status,
+                Priority = i.Priority
+            }).ToList()
+        }).ToList();
     }
 
-   public async Task<User?> GetUserByIdAsync(int id)
-{
-    return await _context.Users
-        .Include(u => u.AssignedIssues)
-        .FirstOrDefaultAsync(u => u.Id == id);
-}
+    public async Task<UserDto?> GetUserByIdAsync(int id)
+    {
+        var user = await _context.Users
+            .Include(u => u.AssignedIssues)
+            .FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User> CreateUserAsync(User user)
+        if (user == null)
+        {
+            return null;
+        }
+
+        return new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+
+            AssignedIssues = user.AssignedIssues.Select(i => new UserIssueDto
+            {
+                Id = i.Id,
+                Title = i.Title,
+                Status = i.Status,
+                Priority = i.Priority
+            }).ToList()
+        };
+    }
+
+    public async Task<UserDto> CreateUserAsync(User user)
     {
         user.CreatedAt = DateTime.UtcNow;
 
@@ -33,41 +72,53 @@ public class UserService
 
         await _context.SaveChangesAsync();
 
-        return user;
-    }
-
-    public async Task<User?> UpdateUserAsync(int id, User user)
-    {
-        var existingUser = await _context.Users.FindAsync(id);
-
-        if (existingUser == null)
+        return new UserDto
         {
-            return null;
-        }
-
-        existingUser.Name = user.Name;
-        existingUser.Email = user.Email;
-
-        await _context.SaveChangesAsync();
-
-        return existingUser;
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+            AssignedIssues = new List<UserIssueDto>()
+        };
     }
 
-
-
-    public async Task<bool> DeleteUserAsync(int id)
+    public async Task<UserDto?> UpdateUserAsync(int id, User user)
 {
-    var user = await _context.Users.FindAsync(id);
+    var existingUser = await _context.Users.FindAsync(id);
 
-    if (user == null)
+    if (existingUser == null)
     {
-        return false;
+        return null;
     }
 
-    _context.Users.Remove(user);
+    existingUser.Name = user.Name;
+    existingUser.Email = user.Email;
 
     await _context.SaveChangesAsync();
 
-    return true;
+    return new UserDto
+    {
+        Id = existingUser.Id,
+        Name = existingUser.Name,
+        Email = existingUser.Email,
+        CreatedAt = existingUser.CreatedAt,
+        AssignedIssues = new List<UserIssueDto>()
+    };
 }
+
+    public async Task<bool> DeleteUserAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        _context.Users.Remove(user);
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
 }
