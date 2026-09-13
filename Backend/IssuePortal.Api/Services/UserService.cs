@@ -18,10 +18,12 @@ public class UserService
         return await _context.Users.ToListAsync();
     }
 
-    public async Task<User?> GetUserByIdAsync(int id)
-    {
-        return await _context.Users.FindAsync(id);
-    }
+   public async Task<User?> GetUserByIdAsync(int id)
+{
+    return await _context.Users
+        .Include(u => u.AssignedIssues)
+        .FirstOrDefaultAsync(u => u.Id == id);
+}
 
     public async Task<User> CreateUserAsync(User user)
     {
