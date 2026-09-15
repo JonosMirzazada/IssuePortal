@@ -1,4 +1,3 @@
-
 using IssuePortal.Api.Data;
 using IssuePortal.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,60 +18,100 @@ public class IssueService
         return await _context.Issues.ToListAsync();
     }
 
- public async Task<IssueDto?> GetIssueByIdAsync(int id)
-{
-    var issue = await _context.Issues
-        .Include(i => i.Comments)
-        .ThenInclude(c => c.User)
-        .FirstOrDefaultAsync(i => i.Id == id);
-
-    if (issue == null)
+    public async Task<IssueDto?> GetIssueByIdAsync(int id)
     {
-        return null;
+        var issue = await _context.Issues
+            .Include(i => i.Comments)
+            .ThenInclude(c => c.User)
+            .FirstOrDefaultAsync(i => i.Id == id);
+
+        if (issue == null)
+        {
+            return null;
+        }
+
+        return new IssueDto
+        {
+            Id = issue.Id,
+            Title = issue.Title,
+            Description = issue.Description,
+            Status = issue.Status,
+            Priority = issue.Priority,
+            CreatedAt = issue.CreatedAt,
+            UpdatedAt = issue.UpdatedAt,
+            ProjectId = issue.ProjectId,
+            AssignedUserId = issue.AssignedUserId,
+
+            Comments = issue.Comments.Select(c => new CommentDto
+            {
+                Id = c.Id,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                IssueId = c.IssueId,
+                IssueTitle = issue.Title,
+                UserId = c.UserId,
+                UserName = c.User?.Name ?? string.Empty
+            }).ToList()
+        };
     }
 
-    return new IssueDto
+    public async Task<(Issue? Issue, string? Error)> CreateIssueAsync(Issue issue)
     {
-        Id = issue.Id,
-        Title = issue.Title,
-        Description = issue.Description,
-        Status = issue.Status,
-        Priority = issue.Priority,
-        CreatedAt = issue.CreatedAt,
-        UpdatedAt = issue.UpdatedAt,
-        ProjectId = issue.ProjectId,
-        AssignedUserId = issue.AssignedUserId,
+        var projectExists = await _context.Projects
+            .AnyAsync(p => p.Id == issue.ProjectId);
 
-        Comments = issue.Comments.Select(c => new CommentDto
+        if (!projectExists)
         {
-            Id = c.Id,
-            Content = c.Content,
-            CreatedAt = c.CreatedAt,
-            IssueId = c.IssueId,
-            IssueTitle = issue.Title,
-            UserId = c.UserId,
-            UserName = c.User?.Name ?? string.Empty
-        }).ToList()
-    };
-}
-    public async Task<Issue> CreateIssueAsync(Issue issue)
-    {
+            return (null, $"Project with ID {issue.ProjectId} does not exist.");
+        }
+
+        if (issue.AssignedUserId.HasValue)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(u => u.Id == issue.AssignedUserId.Value);
+
+            if (!userExists)
+            {
+                return (null, $"User with ID {issue.AssignedUserId.Value} does not exist.");
+            }
+        }
+
         issue.CreatedAt = DateTime.UtcNow;
         issue.UpdatedAt = DateTime.UtcNow;
 
         _context.Issues.Add(issue);
+
         await _context.SaveChangesAsync();
 
-        return issue;
+        return (issue, null);
     }
 
-    public async Task<Issue?> UpdateIssueAsync(int id, Issue issue)
+    public async Task<(Issue? Issue, string? Error)> UpdateIssueAsync(int id, Issue issue)
     {
         var existingIssue = await _context.Issues.FindAsync(id);
 
         if (existingIssue == null)
         {
-            return null;
+            return (null, null);
+        }
+
+        var projectExists = await _context.Projects
+            .AnyAsync(p => p.Id == issue.ProjectId);
+
+        if (!projectExists)
+        {
+            return (null, $"Project with ID {issue.ProjectId} does not exist.");
+        }
+
+        if (issue.AssignedUserId.HasValue)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(u => u.Id == issue.AssignedUserId.Value);
+
+            if (!userExists)
+            {
+                return (null, $"User with ID {issue.AssignedUserId.Value} does not exist.");
+            }
         }
 
         existingIssue.Title = issue.Title;
@@ -85,7 +124,7 @@ public class IssueService
 
         await _context.SaveChangesAsync();
 
-        return existingIssue;
+        return (existingIssue, null);
     }
 
     public async Task<bool> DeleteIssueAsync(int id)

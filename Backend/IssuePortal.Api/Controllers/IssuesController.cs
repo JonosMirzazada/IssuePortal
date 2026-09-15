@@ -26,52 +26,61 @@ public class IssuesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateIssue(Issue issue)
     {
-        var createdIssue = await _issueService.CreateIssueAsync(issue);
+        var result = await _issueService.CreateIssueAsync(issue);
+
+        if (result.Issue == null)
+        {
+            return BadRequest(result.Error);
+        }
 
         return CreatedAtAction(
             nameof(GetIssueById),
-            new { id = createdIssue.Id },
-            createdIssue
+            new { id = result.Issue.Id },
+            result.Issue
         );
     }
 
     [HttpPut("{id}")]
-public async Task<IActionResult> UpdateIssue(int id, Issue issue)
-{
-    var updatedIssue = await _issueService.UpdateIssueAsync(id, issue);
-
-    if (updatedIssue == null)
+    public async Task<IActionResult> UpdateIssue(int id, Issue issue)
     {
-        return NotFound();
+        var result = await _issueService.UpdateIssueAsync(id, issue);
+
+        if (result.Issue == null)
+        {
+            if (result.Error == null)
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.Issue);
     }
 
-    return Ok(updatedIssue);
-}
-
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteIssue(int id)
-{
-    var deleted = await _issueService.DeleteIssueAsync(id);
-
-    if (!deleted)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteIssue(int id)
     {
-        return NotFound();
+        var deleted = await _issueService.DeleteIssueAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
     }
-
-    return NoContent();
-}
-
 
     [HttpGet("{id}")]
-public async Task<IActionResult> GetIssueById(int id)
-{
-    var issue = await _issueService.GetIssueByIdAsync(id);
-
-    if (issue == null)
+    public async Task<IActionResult> GetIssueById(int id)
     {
-        return NotFound();
-    }
+        var issue = await _issueService.GetIssueByIdAsync(id);
 
-    return Ok(issue);
-}
+        if (issue == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(issue);
+    }
 }
