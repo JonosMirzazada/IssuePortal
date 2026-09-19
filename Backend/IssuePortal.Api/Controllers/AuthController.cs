@@ -1,5 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
 using IssuePortal.Api.DTOs;
+using IssuePortal.Api.Models;
+using IssuePortal.Api.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -7,9 +9,37 @@ namespace IssuePortal.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    [HttpPost("register")]
-    public IActionResult Register(RegisterDto registerDto)
+    private readonly AuthService _authService;
+
+    public AuthController(AuthService authService)
     {
-        return Ok(registerDto);
+        _authService = authService;
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterDto registerDto)
+    {
+        try
+        {
+            var user = await _authService.RegisterAsync(registerDto);
+
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                AssignedIssues = new List<UserIssueDto>()
+            };
+
+            return Ok(userDto);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
+        }
     }
 }
