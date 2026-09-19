@@ -22,6 +22,7 @@ builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CommentService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenService>();
 
 // JWT configuration
 var jwtKey = builder.Configuration["Jwt:Key"]

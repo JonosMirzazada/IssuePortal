@@ -10,10 +10,14 @@ namespace IssuePortal.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly TokenService _tokenService;
 
-    public AuthController(AuthService authService)
+    public AuthController(
+        AuthService authService,
+        TokenService tokenService)
     {
         _authService = authService;
+        _tokenService = tokenService;
     }
 
     [HttpPost("register")]
@@ -44,29 +48,25 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-public async Task<IActionResult> Login(LoginDto loginDto)
-{
-    try
+    public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var user = await _authService.LoginAsync(loginDto);
-
-        var userDto = new UserDto
+        try
         {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            CreatedAt = user.CreatedAt,
-            AssignedIssues = new List<UserIssueDto>()
-        };
+            var user = await _authService.LoginAsync(loginDto);
 
-        return Ok(userDto);
-    }
-    catch (InvalidOperationException ex)
-    {
-        return Unauthorized(new
+            var token = _tokenService.CreateToken(user);
+
+            return Ok(new
+            {
+                token
+            });
+        }
+        catch (InvalidOperationException ex)
         {
-            message = ex.Message
-        });
+            return Unauthorized(new
+            {
+                message = ex.Message
+            });
+        }
     }
-}
 }
