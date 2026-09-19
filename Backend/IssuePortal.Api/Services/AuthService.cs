@@ -44,4 +44,29 @@ public class AuthService
 
         return user;
     }
+
+
+    public async Task<User> LoginAsync(LoginDto loginDto)
+{
+    var user = await _context.Users
+        .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+
+    if (user == null)
+    {
+        throw new InvalidOperationException("Invalid email or password.");
+    }
+
+    var result = _passwordHasher.VerifyHashedPassword(
+        user,
+        user.PasswordHash,
+        loginDto.Password
+    );
+
+    if (result == PasswordVerificationResult.Failed)
+    {
+        throw new InvalidOperationException("Invalid email or password.");
+    }
+
+    return user;
+}
 }

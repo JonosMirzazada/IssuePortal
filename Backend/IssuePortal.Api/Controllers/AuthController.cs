@@ -42,4 +42,31 @@ public class AuthController : ControllerBase
             });
         }
     }
+
+    [HttpPost("login")]
+public async Task<IActionResult> Login(LoginDto loginDto)
+{
+    try
+    {
+        var user = await _authService.LoginAsync(loginDto);
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            CreatedAt = user.CreatedAt,
+            AssignedIssues = new List<UserIssueDto>()
+        };
+
+        return Ok(userDto);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Unauthorized(new
+        {
+            message = ex.Message
+        });
+    }
+}
 }
