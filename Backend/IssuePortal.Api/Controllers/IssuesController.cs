@@ -1,11 +1,13 @@
 using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IssuePortal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class IssuesController : ControllerBase
 {
     private readonly IssueService _issueService;
@@ -59,6 +61,7 @@ public class IssuesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteIssue(int id)
     {
         var deleted = await _issueService.DeleteIssueAsync(id);

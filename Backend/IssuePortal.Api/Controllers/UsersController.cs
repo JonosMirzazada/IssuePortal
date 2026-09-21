@@ -1,11 +1,13 @@
 using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IssuePortal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
