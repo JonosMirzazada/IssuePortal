@@ -1,12 +1,13 @@
-
 using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IssuePortal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class CommentsController : ControllerBase
 {
     private readonly CommentService _commentService;
@@ -50,6 +51,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateComment(int id, Comment comment)
     {
         var updatedComment = await _commentService.UpdateCommentAsync(id, comment);
@@ -63,6 +65,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteComment(int id)
     {
         var deleted = await _commentService.DeleteCommentAsync(id);
