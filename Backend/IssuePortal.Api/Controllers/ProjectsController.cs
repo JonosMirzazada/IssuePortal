@@ -2,6 +2,7 @@ using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using IssuePortal.Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -26,9 +27,11 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateProject(Project project)
+    public async Task<IActionResult> CreateProject(CreateProjectDto dto)
     {
-        var createdProject = await _projectService.CreateProjectAsync(project);
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var createdProject = await _projectService.CreateProjectAsync(dto, userId);
 
         return CreatedAtAction(
             nameof(GetProjects),
@@ -52,9 +55,9 @@ public class ProjectsController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateProject(int id, Project project)
+    public async Task<IActionResult> UpdateProject(int id, UpdateProjectDto dto)
     {
-        var updatedProject = await _projectService.UpdateProjectAsync(id, project);
+        var updatedProject = await _projectService.UpdateProjectAsync(id, dto);
 
         if (updatedProject == null)
         {
@@ -71,6 +74,56 @@ public class ProjectsController : ControllerBase
         var deleted = await _projectService.DeleteProjectAsync(id);
 
         if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+
+    [HttpGet("{id}/members")]
+    public async Task<IActionResult> GetMembers(int id)
+    {
+        var members = await _projectService.GetMembersAsync(id);
+
+        if (members == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(members);
+    }
+
+    [HttpPost("{id}/members")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AddMember(int id, AddProjectMemberDto dto)
+    {
+        var result = await _projectService.AddMemberAsync(id, dto);
+
+        if (result.Member == null)
+        {
+            if (result.Error == null)
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Error);
+        }
+
+        return CreatedAtAction(
+            nameof(GetMembers),
+            new { id },
+            result.Member
+        );
+    }
+
+    [HttpDelete("{id}/members/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RemoveMember(int id, int userId)
+    {
+        var removed = await _projectService.RemoveMemberAsync(id, userId);
+
+        if (!removed)
         {
             return NotFound();
         }

@@ -47,13 +47,21 @@ public class CommentService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<CommentDto> CreateCommentAsync(CommentDto dto)
+    public async Task<(CommentDto? Comment, string? Error)> CreateCommentAsync(CreateCommentDto dto, int userId)
     {
+        var issueExists = await _context.Issues
+            .AnyAsync(i => i.Id == dto.IssueId);
+
+        if (!issueExists)
+        {
+            return (null, $"Issue with ID {dto.IssueId} does not exist.");
+        }
+
         var comment = new Comment
         {
             Content = dto.Content,
             IssueId = dto.IssueId,
-            UserId = dto.UserId,
+            UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -66,10 +74,10 @@ public class CommentService
             .Include(c => c.User)
             .FirstAsync(c => c.Id == comment.Id);
 
-        return ToDto(createdComment);
+        return (ToDto(createdComment), null);
     }
 
-    public async Task<CommentDto?> UpdateCommentAsync(int id, Comment comment)
+    public async Task<CommentDto?> UpdateCommentAsync(int id, UpdateCommentDto dto)
     {
         var existingComment = await _context.Comments.FindAsync(id);
 
@@ -78,7 +86,7 @@ public class CommentService
             return null;
         }
 
-        existingComment.Content = comment.Content;
+        existingComment.Content = dto.Content;
 
         await _context.SaveChangesAsync();
 

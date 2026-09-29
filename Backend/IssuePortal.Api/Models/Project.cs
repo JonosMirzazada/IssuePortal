@@ -11,4 +11,6 @@ public class Project
     public DateTime CreatedAt { get; set; }
 
     public List<Issue> Issues { get; set; } = new();
+
+    public List<ProjectMember> Members { get; set; } = new();
 }

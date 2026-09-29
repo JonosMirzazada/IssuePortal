@@ -2,6 +2,7 @@ using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -39,22 +40,29 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateComment(CommentDto dto)
+    public async Task<IActionResult> CreateComment(CreateCommentDto dto)
     {
-        var createdComment = await _commentService.CreateCommentAsync(dto);
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var result = await _commentService.CreateCommentAsync(dto, userId);
+
+        if (result.Comment == null)
+        {
+            return BadRequest(result.Error);
+        }
 
         return CreatedAtAction(
             nameof(GetCommentById),
-            new { id = createdComment.Id },
-            createdComment
+            new { id = result.Comment.Id },
+            result.Comment
         );
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateComment(int id, Comment comment)
+    public async Task<IActionResult> UpdateComment(int id, UpdateCommentDto dto)
     {
-        var updatedComment = await _commentService.UpdateCommentAsync(id, comment);
+        var updatedComment = await _commentService.UpdateCommentAsync(id, dto);
 
         if (updatedComment == null)
         {

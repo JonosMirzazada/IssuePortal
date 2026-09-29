@@ -55,29 +55,38 @@ public class IssueService
         };
     }
 
-    public async Task<(Issue? Issue, string? Error)> CreateIssueAsync(Issue issue)
+    public async Task<(Issue? Issue, string? Error)> CreateIssueAsync(CreateIssueDto dto)
     {
         var projectExists = await _context.Projects
-            .AnyAsync(p => p.Id == issue.ProjectId);
+            .AnyAsync(p => p.Id == dto.ProjectId);
 
         if (!projectExists)
         {
-            return (null, $"Project with ID {issue.ProjectId} does not exist.");
+            return (null, $"Project with ID {dto.ProjectId} does not exist.");
         }
 
-        if (issue.AssignedUserId.HasValue)
+        if (dto.AssignedUserId.HasValue)
         {
             var userExists = await _context.Users
-                .AnyAsync(u => u.Id == issue.AssignedUserId.Value);
+                .AnyAsync(u => u.Id == dto.AssignedUserId.Value);
 
             if (!userExists)
             {
-                return (null, $"User with ID {issue.AssignedUserId.Value} does not exist.");
+                return (null, $"User with ID {dto.AssignedUserId.Value} does not exist.");
             }
         }
 
-        issue.CreatedAt = DateTime.UtcNow;
-        issue.UpdatedAt = DateTime.UtcNow;
+        var issue = new Issue
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            Status = dto.Status,
+            Priority = dto.Priority,
+            ProjectId = dto.ProjectId,
+            AssignedUserId = dto.AssignedUserId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
 
         _context.Issues.Add(issue);
 
@@ -86,7 +95,7 @@ public class IssueService
         return (issue, null);
     }
 
-    public async Task<(Issue? Issue, string? Error)> UpdateIssueAsync(int id, Issue issue)
+    public async Task<(Issue? Issue, string? Error)> UpdateIssueAsync(int id, UpdateIssueDto dto)
     {
         var existingIssue = await _context.Issues.FindAsync(id);
 
@@ -96,30 +105,30 @@ public class IssueService
         }
 
         var projectExists = await _context.Projects
-            .AnyAsync(p => p.Id == issue.ProjectId);
+            .AnyAsync(p => p.Id == dto.ProjectId);
 
         if (!projectExists)
         {
-            return (null, $"Project with ID {issue.ProjectId} does not exist.");
+            return (null, $"Project with ID {dto.ProjectId} does not exist.");
         }
 
-        if (issue.AssignedUserId.HasValue)
+        if (dto.AssignedUserId.HasValue)
         {
             var userExists = await _context.Users
-                .AnyAsync(u => u.Id == issue.AssignedUserId.Value);
+                .AnyAsync(u => u.Id == dto.AssignedUserId.Value);
 
             if (!userExists)
             {
-                return (null, $"User with ID {issue.AssignedUserId.Value} does not exist.");
+                return (null, $"User with ID {dto.AssignedUserId.Value} does not exist.");
             }
         }
 
-        existingIssue.Title = issue.Title;
-        existingIssue.Description = issue.Description;
-        existingIssue.Status = issue.Status;
-        existingIssue.Priority = issue.Priority;
-        existingIssue.ProjectId = issue.ProjectId;
-        existingIssue.AssignedUserId = issue.AssignedUserId;
+        existingIssue.Title = dto.Title;
+        existingIssue.Description = dto.Description;
+        existingIssue.Status = dto.Status;
+        existingIssue.Priority = dto.Priority;
+        existingIssue.ProjectId = dto.ProjectId;
+        existingIssue.AssignedUserId = dto.AssignedUserId;
         existingIssue.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();

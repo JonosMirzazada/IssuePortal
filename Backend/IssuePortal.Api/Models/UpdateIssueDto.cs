@@ -2,10 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IssuePortal.Api.Models;
 
-public class Issue
+public class UpdateIssueDto
 {
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
@@ -14,17 +12,11 @@ public class Issue
     [MaxLength(2000)]
     public string Description { get; set; } = string.Empty;
 
-    [Required]
+    [AllowedValues(IssueStatuses.Open, IssueStatuses.InProgress, IssueStatuses.Closed)]
     public string Status { get; set; } = IssueStatuses.Open;
 
-    [Required]
+    [AllowedValues(IssuePriorities.Low, IssuePriorities.Medium, IssuePriorities.High)]
     public string Priority { get; set; } = IssuePriorities.Medium;
-
-    public List<Comment> Comments { get; set; } = new();
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime UpdatedAt { get; set; }
 
     public int ProjectId { get; set; }
 

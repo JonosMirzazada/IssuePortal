@@ -18,6 +18,8 @@ public class IssuePortalDbContext : DbContext
 
     public DbSet<Comment> Comments { get; set; }
 
+    public DbSet<ProjectMember> ProjectMembers { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,5 +45,24 @@ public class IssuePortalDbContext : DbContext
             .WithMany(u => u.AssignedIssues)
             .HasForeignKey(i => i.AssignedUserId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // ProjectMember -> Project
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne(pm => pm.Project)
+            .WithMany(p => p.Members)
+            .HasForeignKey(pm => pm.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ProjectMember -> User
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne(pm => pm.User)
+            .WithMany(u => u.ProjectMemberships)
+            .HasForeignKey(pm => pm.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // A user can only be a member of a project once
+        modelBuilder.Entity<ProjectMember>()
+            .HasIndex(pm => new { pm.ProjectId, pm.UserId })
+            .IsUnique();
     }
 }

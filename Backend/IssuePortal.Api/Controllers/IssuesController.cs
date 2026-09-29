@@ -26,9 +26,9 @@ public class IssuesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateIssue(Issue issue)
+    public async Task<IActionResult> CreateIssue(CreateIssueDto dto)
     {
-        var result = await _issueService.CreateIssueAsync(issue);
+        var result = await _issueService.CreateIssueAsync(dto);
 
         if (result.Issue == null)
         {
@@ -43,9 +43,9 @@ public class IssuesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateIssue(int id, Issue issue)
+    public async Task<IActionResult> UpdateIssue(int id, UpdateIssueDto dto)
     {
-        var result = await _issueService.UpdateIssueAsync(id, issue);
+        var result = await _issueService.UpdateIssueAsync(id, dto);
 
         if (result.Issue == null)
         {

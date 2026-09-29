@@ -14,5 +14,7 @@ public class User
 
     public List<Issue> AssignedIssues { get; set; } = new();
 
+    public List<ProjectMember> ProjectMemberships { get; set; } = new();
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
