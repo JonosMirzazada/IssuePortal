@@ -29,12 +29,25 @@ Jag bygger detta projekt för att utveckla mina kunskaper inom:
 
 Jag bygger projektet steg för steg och lägger kontinuerligt till nya funktioner, förbättringar och dokumentation.
 
+### 📊 Översikt
+
+| Del | Status |
+|---|---|
+| Backend-API (MVP) | ✅ Klart |
+| Databas och migrationer | ✅ Klart |
+| Säkerhet (JWT, roller, behörighet per projekt) | ✅ Klart |
+| Dokumentation | ✅ Klart |
+| Automatiska tester | ⏳ Ej påbörjat |
+| Frontend | ⏳ Ej påbörjat |
+| Docker | ⏳ Ej påbörjat |
+| DevOps (CI/CD) | ⏳ Ej påbörjat |
+
 ### ✅ Klart
 
 - **Backend-API för MVP:n**
   - Registrering och inloggning med JWT
   - Projekt med medlemmar
-  - Issues med status, prioritet, tilldelning och filtrering
+  - Issues med status, prioritet, tilldelning och filtrering (t.ex. "mina issues")
   - Kommentarer
 - **Roller**
   - User skapar issues och kommenterar.
@@ -43,13 +56,29 @@ Jag bygger projektet steg för steg och lägger kontinuerligt till nya funktione
 - **Behörighet per projekt:** man ser bara projekt man är medlem i.
 - **Databas med migrationer:** PostgreSQL och EF Core.
 - **CORS** för den kommande frontenden.
+- **Dokumentation** av krav, systemdesign, databas och API.
 
-### 📌 Nästa steg
+### 🗺️ Roadmap
 
-- Frontend (React + TypeScript + Tailwind)
-- Automatiska tester
-- Docker
-- DevOps (CI/CD)
+1. **Backend: sista finputsen**
+   - [ ] Validering vid registrering (lösenordslängd, e-postformat)
+   - [ ] Tydligt felmeddelande när en användare med kommentarer tas bort
+   - [ ] Uppdatera `.http`-filen med exempel som använder token
+2. **Frontend** (React + TypeScript + Tailwind)
+   - [ ] Grundsetup med Vite, routing och en API-klient som skickar med token
+   - [ ] Inloggning och registrering
+   - [ ] Projektlista och projektvy med issues och filter
+   - [ ] Issue-detalj med kommentarer och statusändring
+   - [ ] "Mina issues"
+   - [ ] Adminsidor för användare, roller och projektmedlemmar
+3. **Tester**
+   - [ ] xUnit-tester för services och behörighetsregler
+4. **Docker**
+   - [ ] Dockerfile för backenden
+   - [ ] `docker-compose.yml` som startar API och PostgreSQL
+5. **DevOps**
+   - [ ] GitHub Actions som bygger och testar vid varje push
+   - [ ] Deployment
 
 ## 🚀 Kom igång (backend)
 
