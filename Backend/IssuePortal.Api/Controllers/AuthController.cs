@@ -32,6 +32,7 @@ public class AuthController : ControllerBase
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
+                Role = user.Role,
                 CreatedAt = user.CreatedAt,
                 AssignedIssues = new List<UserIssueDto>()
             };
