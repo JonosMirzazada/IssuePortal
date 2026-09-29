@@ -52,7 +52,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> UpdateProject(int id, UpdateProjectDto dto)
     {
         var updatedProject = await _projectService.UpdateProjectAsync(id, dto);
@@ -66,7 +66,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> DeleteProject(int id)
     {
         var deleted = await _projectService.DeleteProjectAsync(id);
@@ -93,7 +93,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost("{id}/members")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> AddMember(int id, AddProjectMemberDto dto)
     {
         var result = await _projectService.AddMemberAsync(id, dto);
@@ -116,7 +116,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpDelete("{id}/members/{userId}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> RemoveMember(int id, int userId)
     {
         var removed = await _projectService.RemoveMemberAsync(id, userId);

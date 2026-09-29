@@ -57,7 +57,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> UpdateComment(int id, UpdateCommentDto dto)
     {
         var updatedComment = await _commentService.UpdateCommentAsync(id, dto);
@@ -71,7 +71,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> DeleteComment(int id)
     {
         var deleted = await _commentService.DeleteCommentAsync(id);

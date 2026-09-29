@@ -15,12 +15,37 @@ public class IssueService
         _projectAccess = projectAccess;
     }
 
-    public async Task<List<Issue>> GetAllIssuesAsync(CurrentUser user)
+    public async Task<List<Issue>> GetAllIssuesAsync(IssueQueryDto query, CurrentUser user)
     {
         var memberProjectIds = _projectAccess.MemberProjectIds(user);
 
-        return await _context.Issues
-            .Where(i => user.IsAdmin || memberProjectIds.Contains(i.ProjectId))
+        var issues = _context.Issues
+            .Where(i => user.IsAdmin || memberProjectIds.Contains(i.ProjectId));
+
+        if (query.ProjectId.HasValue)
+        {
+            issues = issues.Where(i => i.ProjectId == query.ProjectId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(query.Status))
+        {
+            issues = issues.Where(i => i.Status == query.Status);
+        }
+
+        if (!string.IsNullOrEmpty(query.Priority))
+        {
+            issues = issues.Where(i => i.Priority == query.Priority);
+        }
+
+        var assignedUserId = query.AssignedToMe ? user.Id : query.AssignedUserId;
+
+        if (assignedUserId.HasValue)
+        {
+            issues = issues.Where(i => i.AssignedUserId == assignedUserId.Value);
+        }
+
+        return await issues
+            .OrderByDescending(i => i.UpdatedAt)
             .ToListAsync();
     }
 

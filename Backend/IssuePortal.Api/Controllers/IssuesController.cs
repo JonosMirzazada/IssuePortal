@@ -19,9 +19,9 @@ public class IssuesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetIssues()
+    public async Task<IActionResult> GetIssues([FromQuery] IssueQueryDto query)
     {
-        var issues = await _issueService.GetAllIssuesAsync(User.ToCurrentUser());
+        var issues = await _issueService.GetAllIssuesAsync(query, User.ToCurrentUser());
 
         return Ok(issues);
     }
@@ -44,6 +44,7 @@ public class IssuesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = $"{Roles.Developer},{Roles.Admin}")]
     public async Task<IActionResult> UpdateIssue(int id, UpdateIssueDto dto)
     {
         var result = await _issueService.UpdateIssueAsync(id, dto, User.ToCurrentUser());
@@ -62,7 +63,7 @@ public class IssuesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> DeleteIssue(int id)
     {
         var deleted = await _issueService.DeleteIssueAsync(id);

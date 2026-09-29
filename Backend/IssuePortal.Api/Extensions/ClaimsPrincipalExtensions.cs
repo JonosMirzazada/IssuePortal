@@ -9,6 +9,6 @@ public static class ClaimsPrincipalExtensions
     {
         var id = int.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        return new CurrentUser(id, principal.IsInRole("Admin"));
+        return new CurrentUser(id, principal.IsInRole(Roles.Admin));
     }
 }

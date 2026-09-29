@@ -2,12 +2,13 @@ using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using IssuePortal.Api.Extensions;
 
 namespace IssuePortal.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = Roles.Admin)]
 public class UsersController : ControllerBase
 {
     private readonly UserService _userService;
@@ -38,29 +39,22 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateUser(User user)
-    {
-        var createdUser = await _userService.CreateUserAsync(user);
-
-        return CreatedAtAction(
-            nameof(GetUserById),
-            new { id = createdUser.Id },
-            createdUser
-        );
-    }
-
     [HttpPut("{id}")]
-public async Task<IActionResult> UpdateUser(int id, User user)
+public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
 {
-    var updatedUser = await _userService.UpdateUserAsync(id, user);
+    var result = await _userService.UpdateUserAsync(id, dto);
 
-    if (updatedUser == null)
+    if (result.User == null)
     {
-        return NotFound();
+        if (result.Error == null)
+        {
+            return NotFound();
+        }
+
+        return BadRequest(result.Error);
     }
 
-    return Ok(updatedUser);
+    return Ok(result.User);
 }
 
 [HttpDelete("{id}")]
@@ -75,4 +69,22 @@ public async Task<IActionResult> DeleteUser(int id)
 
     return NoContent();
 }
+
+    [HttpPut("{id}/role")]
+    public async Task<IActionResult> UpdateUserRole(int id, UpdateUserRoleDto dto)
+    {
+        var result = await _userService.UpdateRoleAsync(id, dto, User.ToCurrentUser());
+
+        if (result.User == null)
+        {
+            if (result.Error == null)
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result.User);
+    }
 }

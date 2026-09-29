@@ -24,6 +24,7 @@ public class UserService
             Id = user.Id,
             Name = user.Name,
             Email = user.Email,
+            Role = user.Role,
             CreatedAt = user.CreatedAt,
 
             AssignedIssues = user.AssignedIssues.Select(i => new UserIssueDto
@@ -52,6 +53,7 @@ public class UserService
             Id = user.Id,
             Name = user.Name,
             Email = user.Email,
+            Role = user.Role,
             CreatedAt = user.CreatedAt,
 
             AssignedIssues = user.AssignedIssues.Select(i => new UserIssueDto
@@ -64,46 +66,37 @@ public class UserService
         };
     }
 
-    public async Task<UserDto> CreateUserAsync(User user)
-    {
-        user.CreatedAt = DateTime.UtcNow;
-
-        _context.Users.Add(user);
-
-        await _context.SaveChangesAsync();
-
-        return new UserDto
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Email = user.Email,
-            CreatedAt = user.CreatedAt,
-            AssignedIssues = new List<UserIssueDto>()
-        };
-    }
-
-    public async Task<UserDto?> UpdateUserAsync(int id, User user)
+    public async Task<(UserDto? User, string? Error)> UpdateUserAsync(int id, UpdateUserDto dto)
 {
     var existingUser = await _context.Users.FindAsync(id);
 
     if (existingUser == null)
     {
-        return null;
+        return (null, null);
     }
 
-    existingUser.Name = user.Name;
-    existingUser.Email = user.Email;
+    var emailTaken = await _context.Users
+        .AnyAsync(u => u.Email == dto.Email && u.Id != id);
+
+    if (emailTaken)
+    {
+        return (null, "Email already exists.");
+    }
+
+    existingUser.Name = dto.Name;
+    existingUser.Email = dto.Email;
 
     await _context.SaveChangesAsync();
 
-    return new UserDto
+    return (new UserDto
     {
         Id = existingUser.Id,
         Name = existingUser.Name,
         Email = existingUser.Email,
+        Role = existingUser.Role,
         CreatedAt = existingUser.CreatedAt,
         AssignedIssues = new List<UserIssueDto>()
-    };
+    }, null);
 }
 
     public async Task<bool> DeleteUserAsync(int id)
@@ -120,5 +113,35 @@ public class UserService
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<(UserDto? User, string? Error)> UpdateRoleAsync(int id, UpdateUserRoleDto dto, CurrentUser currentUser)
+    {
+        // Prevents an admin from accidentally locking themselves out
+        if (id == currentUser.Id)
+        {
+            return (null, "You cannot change your own role.");
+        }
+
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+        {
+            return (null, null);
+        }
+
+        user.Role = dto.Role;
+
+        await _context.SaveChangesAsync();
+
+        return (new UserDto
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt,
+            AssignedIssues = new List<UserIssueDto>()
+        }, null);
     }
 }
