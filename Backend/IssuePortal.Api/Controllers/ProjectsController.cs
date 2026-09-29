@@ -2,7 +2,7 @@ using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using IssuePortal.Api.Models;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using IssuePortal.Api.Extensions;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -21,7 +21,7 @@ public class ProjectsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProjects()
     {
-        var projects = await _projectService.GetAllProjectsAsync();
+        var projects = await _projectService.GetAllProjectsAsync(User.ToCurrentUser());
 
         return Ok(projects);
     }
@@ -29,9 +29,7 @@ public class ProjectsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateProject(CreateProjectDto dto)
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        var createdProject = await _projectService.CreateProjectAsync(dto, userId);
+        var createdProject = await _projectService.CreateProjectAsync(dto, User.ToCurrentUser().Id);
 
         return CreatedAtAction(
             nameof(GetProjects),
@@ -43,7 +41,7 @@ public class ProjectsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProjectById(int id)
     {
-        var project = await _projectService.GetProjectByIdAsync(id);
+        var project = await _projectService.GetProjectByIdAsync(id, User.ToCurrentUser());
 
         if (project == null)
         {
@@ -84,7 +82,7 @@ public class ProjectsController : ControllerBase
     [HttpGet("{id}/members")]
     public async Task<IActionResult> GetMembers(int id)
     {
-        var members = await _projectService.GetMembersAsync(id);
+        var members = await _projectService.GetMembersAsync(id, User.ToCurrentUser());
 
         if (members == null)
         {

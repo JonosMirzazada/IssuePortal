@@ -7,25 +7,31 @@ namespace IssuePortal.Api.Services;
 public class IssueService
 {
     private readonly IssuePortalDbContext _context;
+    private readonly ProjectAccessService _projectAccess;
 
-    public IssueService(IssuePortalDbContext context)
+    public IssueService(IssuePortalDbContext context, ProjectAccessService projectAccess)
     {
         _context = context;
+        _projectAccess = projectAccess;
     }
 
-    public async Task<List<Issue>> GetAllIssuesAsync()
+    public async Task<List<Issue>> GetAllIssuesAsync(CurrentUser user)
     {
-        return await _context.Issues.ToListAsync();
+        var memberProjectIds = _projectAccess.MemberProjectIds(user);
+
+        return await _context.Issues
+            .Where(i => user.IsAdmin || memberProjectIds.Contains(i.ProjectId))
+            .ToListAsync();
     }
 
-    public async Task<IssueDto?> GetIssueByIdAsync(int id)
+    public async Task<IssueDto?> GetIssueByIdAsync(int id, CurrentUser user)
     {
         var issue = await _context.Issues
             .Include(i => i.Comments)
             .ThenInclude(c => c.User)
             .FirstOrDefaultAsync(i => i.Id == id);
 
-        if (issue == null)
+        if (issue == null || !await _projectAccess.CanAccessProjectAsync(issue.ProjectId, user))
         {
             return null;
         }
@@ -55,25 +61,19 @@ public class IssueService
         };
     }
 
-    public async Task<(Issue? Issue, string? Error)> CreateIssueAsync(CreateIssueDto dto)
+    public async Task<(Issue? Issue, string? Error)> CreateIssueAsync(CreateIssueDto dto, CurrentUser user)
     {
-        var projectExists = await _context.Projects
-            .AnyAsync(p => p.Id == dto.ProjectId);
-
-        if (!projectExists)
+        // Same message whether the project is missing or inaccessible,
+        // so non-members cannot probe which project IDs exist.
+        if (!await _projectAccess.CanAccessProjectAsync(dto.ProjectId, user))
         {
             return (null, $"Project with ID {dto.ProjectId} does not exist.");
         }
 
-        if (dto.AssignedUserId.HasValue)
+        if (dto.AssignedUserId.HasValue
+            && !await _projectAccess.IsMemberAsync(dto.ProjectId, dto.AssignedUserId.Value))
         {
-            var userExists = await _context.Users
-                .AnyAsync(u => u.Id == dto.AssignedUserId.Value);
-
-            if (!userExists)
-            {
-                return (null, $"User with ID {dto.AssignedUserId.Value} does not exist.");
-            }
+            return (null, $"User with ID {dto.AssignedUserId.Value} is not a member of project {dto.ProjectId}.");
         }
 
         var issue = new Issue
@@ -95,32 +95,26 @@ public class IssueService
         return (issue, null);
     }
 
-    public async Task<(Issue? Issue, string? Error)> UpdateIssueAsync(int id, UpdateIssueDto dto)
+    public async Task<(Issue? Issue, string? Error)> UpdateIssueAsync(int id, UpdateIssueDto dto, CurrentUser user)
     {
         var existingIssue = await _context.Issues.FindAsync(id);
 
-        if (existingIssue == null)
+        if (existingIssue == null || !await _projectAccess.CanAccessProjectAsync(existingIssue.ProjectId, user))
         {
             return (null, null);
         }
 
-        var projectExists = await _context.Projects
-            .AnyAsync(p => p.Id == dto.ProjectId);
-
-        if (!projectExists)
+        // Same message whether the project is missing or inaccessible,
+        // so non-members cannot probe which project IDs exist.
+        if (!await _projectAccess.CanAccessProjectAsync(dto.ProjectId, user))
         {
             return (null, $"Project with ID {dto.ProjectId} does not exist.");
         }
 
-        if (dto.AssignedUserId.HasValue)
+        if (dto.AssignedUserId.HasValue
+            && !await _projectAccess.IsMemberAsync(dto.ProjectId, dto.AssignedUserId.Value))
         {
-            var userExists = await _context.Users
-                .AnyAsync(u => u.Id == dto.AssignedUserId.Value);
-
-            if (!userExists)
-            {
-                return (null, $"User with ID {dto.AssignedUserId.Value} does not exist.");
-            }
+            return (null, $"User with ID {dto.AssignedUserId.Value} is not a member of project {dto.ProjectId}.");
         }
 
         existingIssue.Title = dto.Title;

@@ -2,7 +2,7 @@ using IssuePortal.Api.Models;
 using IssuePortal.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using IssuePortal.Api.Extensions;
 
 namespace IssuePortal.Api.Controllers;
 
@@ -21,7 +21,7 @@ public class CommentsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetComments()
     {
-        var comments = await _commentService.GetAllCommentsAsync();
+        var comments = await _commentService.GetAllCommentsAsync(User.ToCurrentUser());
 
         return Ok(comments);
     }
@@ -29,7 +29,7 @@ public class CommentsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCommentById(int id)
     {
-        var comment = await _commentService.GetCommentByIdAsync(id);
+        var comment = await _commentService.GetCommentByIdAsync(id, User.ToCurrentUser());
 
         if (comment == null)
         {
@@ -42,9 +42,7 @@ public class CommentsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateComment(CreateCommentDto dto)
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        var result = await _commentService.CreateCommentAsync(dto, userId);
+        var result = await _commentService.CreateCommentAsync(dto, User.ToCurrentUser());
 
         if (result.Comment == null)
         {

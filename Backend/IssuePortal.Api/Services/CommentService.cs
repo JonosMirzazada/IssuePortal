@@ -8,15 +8,20 @@ namespace IssuePortal.Api.Services;
 public class CommentService
 {
     private readonly IssuePortalDbContext _context;
+    private readonly ProjectAccessService _projectAccess;
 
-    public CommentService(IssuePortalDbContext context)
+    public CommentService(IssuePortalDbContext context, ProjectAccessService projectAccess)
     {
         _context = context;
+        _projectAccess = projectAccess;
     }
 
-    public async Task<List<CommentDto>> GetAllCommentsAsync()
+    public async Task<List<CommentDto>> GetAllCommentsAsync(CurrentUser user)
     {
+        var memberProjectIds = _projectAccess.MemberProjectIds(user);
+
         return await _context.Comments
+            .Where(c => user.IsAdmin || memberProjectIds.Contains(c.Issue!.ProjectId))
             .Select(c => new CommentDto
             {
                 Id = c.Id,
@@ -30,10 +35,13 @@ public class CommentService
             .ToListAsync();
     }
 
-    public async Task<CommentDto?> GetCommentByIdAsync(int id)
+    public async Task<CommentDto?> GetCommentByIdAsync(int id, CurrentUser user)
     {
+        var memberProjectIds = _projectAccess.MemberProjectIds(user);
+
         return await _context.Comments
             .Where(c => c.Id == id)
+            .Where(c => user.IsAdmin || memberProjectIds.Contains(c.Issue!.ProjectId))
             .Select(c => new CommentDto
             {
                 Id = c.Id,
@@ -47,12 +55,12 @@ public class CommentService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<(CommentDto? Comment, string? Error)> CreateCommentAsync(CreateCommentDto dto, int userId)
+    public async Task<(CommentDto? Comment, string? Error)> CreateCommentAsync(CreateCommentDto dto, CurrentUser user)
     {
-        var issueExists = await _context.Issues
-            .AnyAsync(i => i.Id == dto.IssueId);
+        var issue = await _context.Issues.FindAsync(dto.IssueId);
 
-        if (!issueExists)
+        // Same message whether the issue is missing or inaccessible
+        if (issue == null || !await _projectAccess.CanAccessProjectAsync(issue.ProjectId, user))
         {
             return (null, $"Issue with ID {dto.IssueId} does not exist.");
         }
@@ -61,7 +69,7 @@ public class CommentService
         {
             Content = dto.Content,
             IssueId = dto.IssueId,
-            UserId = userId,
+            UserId = user.Id,
             CreatedAt = DateTime.UtcNow
         };
 

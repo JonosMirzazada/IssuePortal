@@ -7,15 +7,21 @@ namespace IssuePortal.Api.Services;
 public class ProjectService
 {
     private readonly IssuePortalDbContext _context;
+    private readonly ProjectAccessService _projectAccess;
 
-    public ProjectService(IssuePortalDbContext context)
+    public ProjectService(IssuePortalDbContext context, ProjectAccessService projectAccess)
     {
         _context = context;
+        _projectAccess = projectAccess;
     }
 
-    public async Task<List<Project>> GetAllProjectsAsync()
+    public async Task<List<Project>> GetAllProjectsAsync(CurrentUser user)
     {
-        return await _context.Projects.ToListAsync();
+        var memberProjectIds = _projectAccess.MemberProjectIds(user);
+
+        return await _context.Projects
+            .Where(p => user.IsAdmin || memberProjectIds.Contains(p.Id))
+            .ToListAsync();
     }
 
     public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto dto, int creatorUserId)
@@ -39,8 +45,13 @@ public class ProjectService
 
     return ToDto(project);
 }
-public async Task<ProjectDto?> GetProjectByIdAsync(int id)
+public async Task<ProjectDto?> GetProjectByIdAsync(int id, CurrentUser user)
 {
+    if (!await _projectAccess.CanAccessProjectAsync(id, user))
+    {
+        return null;
+    }
+
     var project = await _context.Projects
         .Include(p => p.Issues)
         .FirstOrDefaultAsync(p => p.Id == id);
@@ -86,12 +97,9 @@ public async Task<bool> DeleteProjectAsync(int id)
     return true;
 }
 
-    public async Task<List<ProjectMemberDto>?> GetMembersAsync(int projectId)
+    public async Task<List<ProjectMemberDto>?> GetMembersAsync(int projectId, CurrentUser user)
     {
-        var projectExists = await _context.Projects
-            .AnyAsync(p => p.Id == projectId);
-
-        if (!projectExists)
+        if (!await _projectAccess.CanAccessProjectAsync(projectId, user))
         {
             return null;
         }
