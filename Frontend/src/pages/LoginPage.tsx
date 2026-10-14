@@ -1,14 +1,24 @@
+import { login } from '../api'
 import { useState } from 'react'
+
 
 function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
 
   // NEW: runs when the form is submitted
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    console.log("Email:", email, "Password:", password)
+  async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  setError("")                                // NEW: clear any old error
+
+  try {
+    const token = await login(email, password)
+    console.log("Logged in! Token:", token)
+  } catch {
+    setError("Invalid email or password.")    // NEW: instead of console.log
   }
+}
 
   return (
     <div className="max-w-sm">
@@ -25,7 +35,7 @@ function LoginPage() {
             className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
           />
         </div>
-
+          {error && <p className="text-sm text-red-600">{error}</p>}   {/* ← NEW LINE HERE */}
         <div>
           <label className="block text-sm font-medium">Password</label>
           <input
