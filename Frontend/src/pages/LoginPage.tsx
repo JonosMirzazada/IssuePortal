@@ -1,4 +1,5 @@
 import { login } from '../api'
+import { useNavigate } from 'react-router'
 import { useState } from 'react'
 
 
@@ -6,6 +7,7 @@ function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const navigate = useNavigate()
 
   // NEW: runs when the form is submitted
   async function handleSubmit(e: React.FormEvent) {
@@ -15,8 +17,10 @@ function LoginPage() {
   try {
     const token = await login(email, password)
     console.log("Logged in! Token:", token)
+     localStorage.setItem("token", token)   // NEW: save the token in the browser
+    navigate("/projects")                  
   } catch {
-    setError("Invalid email or password.")    // NEW: instead of console.log
+    setError("Invalid email or password.")    
   }
 }
 
