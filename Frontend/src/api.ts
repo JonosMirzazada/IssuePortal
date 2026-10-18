@@ -36,3 +36,22 @@ export async function getProjects(): Promise<Project[]> {
 
   return await response.json()
 }
+
+export async function createProject(name: string, description: string): Promise<Project> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/projects`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, description }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not create the project.")
+  }
+
+  return await response.json()
+}
