@@ -14,3 +14,25 @@ export async function login(email: string, password: string): Promise<string> {
   const data = await response.json()
   return data.token
 }
+
+
+export type Project = {
+  id: number
+  name: string
+  description: string
+  createdAt: string
+}
+
+export async function getProjects(): Promise<Project[]> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/projects`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not load projects.")
+  }
+
+  return await response.json()
+}
