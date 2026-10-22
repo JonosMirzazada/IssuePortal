@@ -67,3 +67,28 @@ export async function register(name: string, email: string, password: string): P
     throw new Error(data.message)
   }
 }
+
+export type ProjectIssue = {
+  id: number
+  title: string
+  status: string
+  priority: string
+}
+
+export type ProjectDetails = Project & {
+  issues: ProjectIssue[]
+}
+
+export async function getProject(id: string): Promise<ProjectDetails> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/projects/${id}`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not load the project.")
+  }
+
+  return await response.json()
+}

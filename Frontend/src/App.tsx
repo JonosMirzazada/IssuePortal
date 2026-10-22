@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Link, useNavigate } from 'react-router'
+import ProjectDetailPage from './pages/ProjectDetailPage'
 import LoginPage from './pages/LoginPage'
 import ProjectsPage from './pages/ProjectsPage'
 import RegisterPage from './pages/RegisterPage'
@@ -23,13 +24,17 @@ function App() {
       </nav>
 
       <Routes>
-      <Route path="/" element={<Navigate to="/projects" />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route
+        <Route path="/" element={<Navigate to="/projects" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
       path="/projects"
       element={localStorage.getItem("token") ? <ProjectsPage /> : <Navigate to="/login" />}
-      />
+        />
+        <Route
+      path="/projects/:id"
+      element={localStorage.getItem("token") ? <ProjectDetailPage /> : <Navigate to="/login" />}
+         />
       </Routes>
       </div>
   )

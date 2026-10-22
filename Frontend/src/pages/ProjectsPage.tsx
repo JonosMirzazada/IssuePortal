@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getProjects, createProject, type Project } from '../api'   // NEW: createProject
+import { Link } from 'react-router'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -64,13 +65,18 @@ function ProjectsPage() {
       )}
 
       <ul className="mt-6 flex flex-col gap-2">
-        {projects.map(project => (
-          <li key={project.id} className="rounded border border-gray-300 p-4">
-            <p className="font-medium">{project.name}</p>
-            <p className="text-sm text-gray-600">{project.description}</p>
-          </li>
-        ))}
-      </ul>
+         {projects.map(project => (
+        <li key={project.id}>
+      <Link
+        to={`/projects/${project.id}`}
+        className="block rounded border border-gray-300 p-4 hover:bg-gray-50"
+      >
+        <p className="font-medium">{project.name}</p>
+        <p className="text-sm text-gray-600">{project.description}</p>
+      </Link>
+    </li>
+  ))}
+</ul>
     </div>
   )
 }
