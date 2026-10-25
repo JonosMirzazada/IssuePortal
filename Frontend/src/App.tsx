@@ -3,6 +3,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage'
 import LoginPage from './pages/LoginPage'
 import ProjectsPage from './pages/ProjectsPage'
 import RegisterPage from './pages/RegisterPage'
+import IssueDetailPage from './pages/IssueDetailPage'
 
 function App() {
   const navigate = useNavigate()
@@ -35,9 +36,14 @@ function App() {
       path="/projects/:id"
       element={localStorage.getItem("token") ? <ProjectDetailPage /> : <Navigate to="/login" />}
          />
+         <Route
+      path="/issues/:id"
+      element={localStorage.getItem("token") ? <IssueDetailPage /> : <Navigate to="/login" />}
+          />
       </Routes>
       </div>
   )
 }
+
 
 export default App

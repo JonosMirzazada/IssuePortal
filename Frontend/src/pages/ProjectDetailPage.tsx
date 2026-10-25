@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
-import { getProject, createIssue, type ProjectDetails } from '../api'   // NEW: createIssue
+import { useParams, Link } from 'react-router'   // CHANGED: added Link
+import { getProject, createIssue, type ProjectDetails } from '../api'
 
 function ProjectDetailPage() {
   const { id } = useParams()
   const [project, setProject] = useState<ProjectDetails | null>(null)
   const [error, setError] = useState("")
 
-  // NEW: state for the form
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState("Medium")
@@ -21,7 +20,6 @@ function ProjectDetailPage() {
       .catch(() => setError("Could not load the project."))
   }, [id])
 
-  // NEW: runs when "Create issue" is clicked
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError("")
@@ -51,7 +49,6 @@ function ProjectDetailPage() {
       <h1 className="text-3xl font-bold">{project.name}</h1>
       <p className="mt-2 text-gray-600">{project.description}</p>
 
-      {/* NEW: the form */}
       <form onSubmit={handleSubmit} className="mt-8 flex max-w-sm flex-col gap-3">
         <h2 className="text-xl font-semibold">New issue</h2>
         <input
@@ -96,11 +93,17 @@ function ProjectDetailPage() {
 
       <ul className="mt-4 flex flex-col gap-2">
         {project.issues.map(issue => (
-          <li key={issue.id} className="rounded border border-gray-300 p-4">
-            <p className="font-medium">{issue.title}</p>
-            <p className="text-sm text-gray-600">
-              {issue.status} · {issue.priority}
-            </p>
+          <li key={issue.id}>
+            {/* CHANGED: the whole box is now a link to the issue page */}
+            <Link
+              to={`/issues/${issue.id}`}
+              className="block rounded border border-gray-300 p-4 hover:bg-gray-50"
+            >
+              <p className="font-medium">{issue.title}</p>
+              <p className="text-sm text-gray-600">
+                {issue.status} · {issue.priority}
+              </p>
+            </Link>
           </li>
         ))}
       </ul>

@@ -147,3 +147,22 @@ export async function getIssue(id: string): Promise<IssueDetails> {
 
   return await response.json()
 }
+
+export async function createComment(issueId: number, content: string): Promise<Comment> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/comments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ issueId, content }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not add the comment.")
+  }
+
+  return await response.json()
+}
