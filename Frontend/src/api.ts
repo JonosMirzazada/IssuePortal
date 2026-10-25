@@ -116,3 +116,34 @@ export async function createIssue(
 
   return await response.json()
 }
+export type Comment = {
+  id: number
+  content: string
+  createdAt: string
+  userName: string
+}
+
+export type IssueDetails = {
+  id: number
+  title: string
+  description: string
+  status: string
+  priority: string
+  projectId: number
+  assignedUserId: number | null
+  comments: Comment[]
+}
+
+export async function getIssue(id: string): Promise<IssueDetails> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues/${id}`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not load the issue.")
+  }
+
+  return await response.json()
+}
