@@ -92,3 +92,27 @@ export async function getProject(id: string): Promise<ProjectDetails> {
 
   return await response.json()
 }
+
+export async function createIssue(
+  projectId: number,
+  title: string,
+  description: string,
+  priority: string
+): Promise<ProjectIssue> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ projectId, title, description, priority }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not create the issue.")
+  }
+
+  return await response.json()
+}
