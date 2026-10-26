@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
-import { getIssue, createComment, type IssueDetails } from '../api'   // NEW: createComment
+import { getIssue, createComment, updateIssueStatus, type IssueDetails } from '../api'   // NEW: updateIssueStatus
 
 function IssueDetailPage() {
   const { id } = useParams()
   const [issue, setIssue] = useState<IssueDetails | null>(null)
   const [error, setError] = useState("")
 
-  // NEW: state for the comment form
   const [content, setContent] = useState("")
   const [formError, setFormError] = useState("")
+  const [statusError, setStatusError] = useState("")   // NEW
 
   useEffect(() => {
     if (!id) return
@@ -19,7 +19,19 @@ function IssueDetailPage() {
       .catch(() => setError("Could not load the issue."))
   }, [id])
 
-  // NEW: runs when "Add comment" is clicked
+  // NEW: runs when a new status is chosen in the dropdown
+  async function handleStatusChange(newStatus: string) {
+    setStatusError("")
+    if (!issue) return
+
+    try {
+      await updateIssueStatus(issue, newStatus)
+      setIssue({ ...issue, status: newStatus })
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : "Could not update the status.")
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError("")
@@ -49,9 +61,23 @@ function IssueDetailPage() {
       </Link>
 
       <h1 className="mt-4 text-3xl font-bold">{issue.title}</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        {issue.status} · {issue.priority}
-      </p>
+
+      {/* NEW: status dropdown + priority */}
+      <div className="mt-2 flex items-center gap-3 text-sm">
+        <select
+          value={issue.status}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          className="rounded border border-gray-300 px-2 py-1"
+        >
+          <option value="Open">Open</option>
+          <option value="InProgress">In progress</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <span className="text-gray-600">Priority: {issue.priority}</span>
+      </div>
+
+      {statusError && <p className="mt-2 text-sm text-red-600">{statusError}</p>}
+
       <p className="mt-4">{issue.description}</p>
 
       <h2 className="mt-8 text-xl font-semibold">Comments</h2>
@@ -71,7 +97,6 @@ function IssueDetailPage() {
         ))}
       </ul>
 
-      {/* NEW: the comment form, under the comments */}
       <form onSubmit={handleSubmit} className="mt-6 flex max-w-lg flex-col gap-3">
         <textarea
           placeholder="Write a comment..."

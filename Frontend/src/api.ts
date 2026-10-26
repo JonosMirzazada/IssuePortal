@@ -166,3 +166,27 @@ export async function createComment(issueId: number, content: string): Promise<C
 
   return await response.json()
 }
+
+export async function updateIssueStatus(issue: IssueDetails, status: string): Promise<void> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues/${issue.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      title: issue.title,
+      description: issue.description,
+      status: status,
+      priority: issue.priority,
+      projectId: issue.projectId,
+      assignedUserId: issue.assignedUserId,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not update the status (${response.status}).`)
+  }
+}
