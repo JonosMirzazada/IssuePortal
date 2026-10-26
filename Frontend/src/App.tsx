@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import ProjectsPage from './pages/ProjectsPage'
 import RegisterPage from './pages/RegisterPage'
 import IssueDetailPage from './pages/IssueDetailPage'
+import MyIssuesPage from './pages/MyIssuesPage'
 
 function App() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ function App() {
       <nav className="mb-6 flex gap-4">
         <Link to="/projects" className="text-blue-600 hover:underline">Projects</Link>
         <Link to="/login" className="text-blue-600 hover:underline">Log in</Link>
+        <Link to="/my-issues" className="text-blue-600 hover:underline">My issues</Link>
         <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
         <button onClick={handleLogout} className="text-blue-600 hover:underline">
           Log out
@@ -40,6 +42,11 @@ function App() {
       path="/issues/:id"
       element={localStorage.getItem("token") ? <IssueDetailPage /> : <Navigate to="/login" />}
           />
+
+      <Route
+      path="/my-issues"
+      element={localStorage.getItem("token") ? <MyIssuesPage /> : <Navigate to="/login" />}
+/>
       </Routes>
       </div>
   )

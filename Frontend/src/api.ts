@@ -184,9 +184,23 @@ export async function updateIssueStatus(issue: IssueDetails, status: string): Pr
       projectId: issue.projectId,
       assignedUserId: issue.assignedUserId,
     }),
-  })
+  })  
 
   if (!response.ok) {
     throw new Error(`Could not update the status (${response.status}).`)
   }
+}
+
+export async function getMyIssues(): Promise<ProjectIssue[]> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues?assignedToMe=true`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not load your issues.")
+  }
+
+  return await response.json()
 }
