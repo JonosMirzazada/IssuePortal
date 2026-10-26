@@ -204,3 +204,35 @@ export async function getMyIssues(): Promise<ProjectIssue[]> {
 
   return await response.json()
 }
+export function getCurrentUserId(): number | null {
+  const token = localStorage.getItem("token")
+  if (!token) return null
+
+  const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
+  const data = JSON.parse(atob(payload))
+  return Number(data["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"])
+}
+
+export async function assignIssue(issue: IssueDetails, userId: number | null): Promise<void> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues/${issue.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      title: issue.title,
+      description: issue.description,
+      status: issue.status,
+      priority: issue.priority,
+      projectId: issue.projectId,
+      assignedUserId: userId,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not assign the issue (${response.status}).`)
+  }
+}

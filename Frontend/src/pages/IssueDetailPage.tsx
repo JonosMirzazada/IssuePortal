@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router'
-import { getIssue, createComment, updateIssueStatus, type IssueDetails } from '../api'   // NEW: updateIssueStatus
+import {
+  getIssue,
+  createComment,
+  updateIssueStatus,
+  assignIssue,          // NEW
+  getCurrentUserId,     // NEW
+  type IssueDetails,
+} from '../api'
 
 function IssueDetailPage() {
   const { id } = useParams()
@@ -9,7 +16,9 @@ function IssueDetailPage() {
 
   const [content, setContent] = useState("")
   const [formError, setFormError] = useState("")
-  const [statusError, setStatusError] = useState("")   // NEW
+  const [updateError, setUpdateError] = useState("")   // CHANGED: renamed from statusError
+
+  const myId = getCurrentUserId()   // NEW: who am I? (read from the token)
 
   useEffect(() => {
     if (!id) return
@@ -19,16 +28,28 @@ function IssueDetailPage() {
       .catch(() => setError("Could not load the issue."))
   }, [id])
 
-  // NEW: runs when a new status is chosen in the dropdown
   async function handleStatusChange(newStatus: string) {
-    setStatusError("")
+    setUpdateError("")
     if (!issue) return
 
     try {
       await updateIssueStatus(issue, newStatus)
       setIssue({ ...issue, status: newStatus })
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : "Could not update the status.")
+      setUpdateError(err instanceof Error ? err.message : "Could not update the status.")
+    }
+  }
+
+  // NEW: assign the issue to me, or unassign it (userId = null)
+  async function handleAssign(userId: number | null) {
+    setUpdateError("")
+    if (!issue) return
+
+    try {
+      await assignIssue(issue, userId)
+      setIssue({ ...issue, assignedUserId: userId })
+    } catch (err) {
+      setUpdateError(err instanceof Error ? err.message : "Could not assign the issue.")
     }
   }
 
@@ -54,6 +75,8 @@ function IssueDetailPage() {
     return <p className="text-gray-600">Loading...</p>
   }
 
+  const assignedToMe = issue.assignedUserId === myId   // NEW
+
   return (
     <div>
       <Link to={`/projects/${issue.projectId}`} className="text-sm text-blue-600 hover:underline">
@@ -62,7 +85,6 @@ function IssueDetailPage() {
 
       <h1 className="mt-4 text-3xl font-bold">{issue.title}</h1>
 
-      {/* NEW: status dropdown + priority */}
       <div className="mt-2 flex items-center gap-3 text-sm">
         <select
           value={issue.status}
@@ -76,7 +98,28 @@ function IssueDetailPage() {
         <span className="text-gray-600">Priority: {issue.priority}</span>
       </div>
 
-      {statusError && <p className="mt-2 text-sm text-red-600">{statusError}</p>}
+      {/* NEW: who is the issue assigned to? */}
+      <div className="mt-2 flex items-center gap-3 text-sm">
+        <span className="text-gray-600">
+          {assignedToMe
+            ? "Assigned to you"
+            : issue.assignedUserId === null
+              ? "Unassigned"
+              : `Assigned to user #${issue.assignedUserId}`}
+        </span>
+
+        {assignedToMe ? (
+          <button onClick={() => handleAssign(null)} className="text-blue-600 hover:underline">
+            Unassign
+          </button>
+        ) : (
+          <button onClick={() => handleAssign(myId)} className="text-blue-600 hover:underline">
+            Assign to me
+          </button>
+        )}
+      </div>
+
+      {updateError && <p className="mt-2 text-sm text-red-600">{updateError}</p>}
 
       <p className="mt-4">{issue.description}</p>
 
