@@ -204,13 +204,25 @@ export async function getMyIssues(): Promise<ProjectIssue[]> {
 
   return await response.json()
 }
-export function getCurrentUserId(): number | null {
+function getTokenData(): Record<string, string> | null {
   const token = localStorage.getItem("token")
   if (!token) return null
 
   const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")
-  const data = JSON.parse(atob(payload))
+  return JSON.parse(atob(payload))
+}
+
+export function getCurrentUserId(): number | null {
+  const data = getTokenData()
+  if (!data) return null
   return Number(data["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"])
+}
+
+
+export function getCurrentUserRole(): string | null {
+  const data = getTokenData()
+  if (!data) return null
+  return data["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
 }
 
 export async function assignIssue(issue: IssueDetails, userId: number | null): Promise<void> {
