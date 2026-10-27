@@ -248,3 +248,41 @@ export async function assignIssue(issue: IssueDetails, userId: number | null): P
     throw new Error(`Could not assign the issue (${response.status}).`)
   }
 }
+
+export type User = {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+export async function getUsers(): Promise<User[]> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/users`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not load users (${response.status}).`)
+  }
+
+  return await response.json()
+}
+
+export async function updateUserRole(userId: number, role: string): Promise<void> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ role }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not change the role (${response.status}).`)
+  }
+}

@@ -4,8 +4,9 @@ import {
   getIssue,
   createComment,
   updateIssueStatus,
-  assignIssue,          // NEW
-  getCurrentUserId,     // NEW
+  assignIssue,
+  getCurrentUserId,
+  getCurrentUserRole,
   type IssueDetails,
 } from '../api'
 
@@ -16,9 +17,11 @@ function IssueDetailPage() {
 
   const [content, setContent] = useState("")
   const [formError, setFormError] = useState("")
-  const [updateError, setUpdateError] = useState("")   // CHANGED: renamed from statusError
+  const [updateError, setUpdateError] = useState("")
 
-  const myId = getCurrentUserId()   // NEW: who am I? (read from the token)
+  const myId = getCurrentUserId()
+  const role = getCurrentUserRole()
+  const canEdit = role === "Developer" || role === "Admin"
 
   useEffect(() => {
     if (!id) return
@@ -40,7 +43,6 @@ function IssueDetailPage() {
     }
   }
 
-  // NEW: assign the issue to me, or unassign it (userId = null)
   async function handleAssign(userId: number | null) {
     setUpdateError("")
     if (!issue) return
@@ -75,7 +77,7 @@ function IssueDetailPage() {
     return <p className="text-gray-600">Loading...</p>
   }
 
-  const assignedToMe = issue.assignedUserId === myId   // NEW
+  const assignedToMe = issue.assignedUserId === myId
 
   return (
     <div>
@@ -86,19 +88,23 @@ function IssueDetailPage() {
       <h1 className="mt-4 text-3xl font-bold">{issue.title}</h1>
 
       <div className="mt-2 flex items-center gap-3 text-sm">
-        <select
-          value={issue.status}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          className="rounded border border-gray-300 px-2 py-1"
-        >
-          <option value="Open">Open</option>
-          <option value="InProgress">In progress</option>
-          <option value="Closed">Closed</option>
-        </select>
+        {/* CHANGED: only Developers and Admins get the dropdown */}
+        {canEdit ? (
+          <select
+            value={issue.status}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1"
+          >
+            <option value="Open">Open</option>
+            <option value="InProgress">In progress</option>
+            <option value="Closed">Closed</option>
+          </select>
+        ) : (
+          <span className="font-medium">{issue.status}</span>
+        )}
         <span className="text-gray-600">Priority: {issue.priority}</span>
       </div>
 
-      {/* NEW: who is the issue assigned to? */}
       <div className="mt-2 flex items-center gap-3 text-sm">
         <span className="text-gray-600">
           {assignedToMe
@@ -108,14 +114,17 @@ function IssueDetailPage() {
               : `Assigned to user #${issue.assignedUserId}`}
         </span>
 
-        {assignedToMe ? (
-          <button onClick={() => handleAssign(null)} className="text-blue-600 hover:underline">
-            Unassign
-          </button>
-        ) : (
-          <button onClick={() => handleAssign(myId)} className="text-blue-600 hover:underline">
-            Assign to me
-          </button>
+        {/* CHANGED: only Developers and Admins get the assign buttons */}
+        {canEdit && (
+          assignedToMe ? (
+            <button onClick={() => handleAssign(null)} className="text-blue-600 hover:underline">
+              Unassign
+            </button>
+          ) : (
+            <button onClick={() => handleAssign(myId)} className="text-blue-600 hover:underline">
+              Assign to me
+            </button>
+          )
         )}
       </div>
 
