@@ -344,3 +344,4 @@ export async function deleteIssue(issueId: number): Promise<void> {
     throw new Error(`Could not delete the issue (${response.status}).`)
   }
 }
+
