@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router'   // CHANGED: added Link
-import { getProject, createIssue, type ProjectDetails } from '../api'
+import { useParams, Link } from 'react-router'
+import {
+  getProject,
+  createIssue,
+  getProjectMembers,     // NEW
+  addProjectMember,      // NEW
+  getUsers,              // NEW
+  getCurrentUserRole,    // NEW
+  type ProjectDetails,
+  type ProjectMember,    // NEW
+  type User,             // NEW
+} from '../api'
 
 function ProjectDetailPage() {
   const { id } = useParams()
@@ -12,13 +22,33 @@ function ProjectDetailPage() {
   const [priority, setPriority] = useState("Medium")
   const [formError, setFormError] = useState("")
 
+  // NEW: members
+  const [members, setMembers] = useState<ProjectMember[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [selectedUserId, setSelectedUserId] = useState("")
+  const [memberError, setMemberError] = useState("")
+
+  const isAdmin = getCurrentUserRole() === "Admin"   // NEW
+
   useEffect(() => {
     if (!id) return
 
     getProject(id)
       .then(data => setProject(data))
       .catch(() => setError("Could not load the project."))
-  }, [id])
+
+    // NEW: load the members
+    getProjectMembers(Number(id))
+      .then(data => setMembers(data))
+      .catch(() => setMemberError("Could not load the members."))
+
+    // NEW: admins also load all users, for the "add member" dropdown
+    if (isAdmin) {
+      getUsers()
+        .then(data => setUsers(data))
+        .catch(() => setMemberError("Could not load users."))
+    }
+  }, [id, isAdmin])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,6 +66,21 @@ function ProjectDetailPage() {
     }
   }
 
+  // NEW: runs when "Add member" is clicked
+  async function handleAddMember(e: React.FormEvent) {
+    e.preventDefault()
+    setMemberError("")
+    if (!project || selectedUserId === "") return
+
+    try {
+      const newMember = await addProjectMember(project.id, Number(selectedUserId))
+      setMembers([...members, newMember])
+      setSelectedUserId("")
+    } catch (err) {
+      setMemberError(err instanceof Error ? err.message : "Could not add the member.")
+    }
+  }
+
   if (error) {
     return <p className="text-red-600">{error}</p>
   }
@@ -44,10 +89,50 @@ function ProjectDetailPage() {
     return <p className="text-gray-600">Loading...</p>
   }
 
+  // NEW: users who are NOT members yet (only these can be added)
+  const nonMembers = users.filter(user => !members.some(m => m.userId === user.id))
+
   return (
     <div>
       <h1 className="text-3xl font-bold">{project.name}</h1>
       <p className="mt-2 text-gray-600">{project.description}</p>
+
+      {/* NEW: the members section */}
+      <h2 className="mt-8 text-xl font-semibold">Members</h2>
+
+      <ul className="mt-2 flex flex-col gap-1">
+        {members.map(member => (
+          <li key={member.userId} className="text-sm">
+            <span className="font-medium">{member.userName}</span>
+            <span className="text-gray-600"> — {member.email}</span>
+          </li>
+        ))}
+      </ul>
+
+      {isAdmin && (
+        <form onSubmit={handleAddMember} className="mt-3 flex items-center gap-2">
+          <select
+            value={selectedUserId}
+            onChange={(e) => setSelectedUserId(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1 text-sm"
+          >
+            <option value="">Choose a user...</option>
+            {nonMembers.map(user => (
+              <option key={user.id} value={user.id}>
+                {user.name} ({user.email})
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Add member
+          </button>
+        </form>
+      )}
+
+      {memberError && <p className="mt-2 text-sm text-red-600">{memberError}</p>}
 
       <form onSubmit={handleSubmit} className="mt-8 flex max-w-sm flex-col gap-3">
         <h2 className="text-xl font-semibold">New issue</h2>
@@ -94,7 +179,6 @@ function ProjectDetailPage() {
       <ul className="mt-4 flex flex-col gap-2">
         {project.issues.map(issue => (
           <li key={issue.id}>
-            {/* CHANGED: the whole box is now a link to the issue page */}
             <Link
               to={`/issues/${issue.id}`}
               className="block rounded border border-gray-300 p-4 hover:bg-gray-50"

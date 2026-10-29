@@ -286,3 +286,43 @@ export async function updateUserRole(userId: number, role: string): Promise<void
     throw new Error(`Could not change the role (${response.status}).`)
   }
 }
+ 
+export type ProjectMember = {
+  userId: number
+  userName: string
+  email: string
+  joinedAt: string
+}
+
+export async function getProjectMembers(projectId: number): Promise<ProjectMember[]> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/projects/${projectId}/members`, {
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not load members (${response.status}).`)
+  }
+
+  return await response.json()
+}
+
+export async function addProjectMember(projectId: number, userId: number): Promise<ProjectMember> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/projects/${projectId}/members`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({ userId }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not add the member (${response.status}).`)
+  }
+
+  return await response.json()
+}
