@@ -1,12 +1,12 @@
 # IssuePortal 🚧
 
-> **Status: Under utveckling**
+Ett system för att hantera projekt, uppgifter (issues) och kommentarer, med inloggning och rollbaserad behörighet.
 
-Ett system för att hantera projekt och uppgifter.
+> **Status:** Under utveckling. Backend-API:t (MVP) är klart. Frontend, tester, Docker och CI/CD är nästa steg.
 
-## 🎯 Mitt mål
+## 🎯 Syfte
 
-Jag bygger detta projekt för att utveckla mina kunskaper inom:
+Jag bygger IssuePortal för att lära mig hela kedjan i ett riktigt system, steg för steg:
 
 - Backendutveckling
 - Frontendutveckling
@@ -23,13 +23,25 @@ Jag bygger detta projekt för att utveckla mina kunskaper inom:
 | Autentisering | JWT, rollbaserad behörighet (User / Developer / Admin) |
 | Frontend (planerad) | React, TypeScript, Tailwind CSS |
 
-## 🚧 Projektstatus
+## ✨ Funktioner
 
-**Projektet är under utveckling och är ännu inte färdigt.**
+- Registrering och inloggning med JWT
+- Projekt med medlemmar
+- Issues med status, prioritet, tilldelning och filtrering (t.ex. "mina issues")
+- Kommentarer på issues
+- Behörighet per projekt: man ser bara projekt man är medlem i
+- Databas med migrationer (PostgreSQL och EF Core)
+- CORS konfigurerat för den kommande frontenden
 
-Jag bygger projektet steg för steg och lägger kontinuerligt till nya funktioner, förbättringar och dokumentation.
+### Roller
 
-### 📊 Översikt
+| Roll | Kan göra |
+|---|---|
+| User | Skapa issues och kommentera |
+| Developer | Uppdatera issues |
+| Admin | Hantera användare, roller och projekt |
+
+## 📊 Översikt
 
 | Del | Status |
 |---|---|
@@ -42,47 +54,45 @@ Jag bygger projektet steg för steg och lägger kontinuerligt till nya funktione
 | Docker | ⏳ Ej påbörjat |
 | DevOps (CI/CD) | ⏳ Ej påbörjat |
 
-### ✅ Klart
+## 🗺️ Roadmap
 
-- **Backend-API för MVP:n**
-  - Registrering och inloggning med JWT
-  - Projekt med medlemmar
-  - Issues med status, prioritet, tilldelning och filtrering (t.ex. "mina issues")
-  - Kommentarer
-- **Roller**
-  - User skapar issues och kommenterar.
-  - Developer uppdaterar issues.
-  - Admin hanterar användare, roller och projekt.
-- **Behörighet per projekt:** man ser bara projekt man är medlem i.
-- **Databas med migrationer:** PostgreSQL och EF Core.
-- **CORS** för den kommande frontenden.
-- **Dokumentation** av krav, systemdesign, databas och API.
+### Backend: sista finputsen
+- [ ] Validering vid registrering (lösenordslängd, e-postformat)
+- [ ] Tydligt felmeddelande när en användare med kommentarer tas bort
+- [ ] Uppdatera `.http`-filen med exempel som använder token
 
-### 🗺️ Roadmap
+### Frontend (React + TypeScript + Tailwind)
+- [ ] Grundsetup med Vite, routing och en API-klient som skickar med token
+- [ ] Inloggning och registrering
+- [ ] Projektlista och projektvy med issues och filter
+- [ ] Issue-detalj med kommentarer och statusändring
+- [ ] "Mina issues"
+- [ ] Adminsidor för användare, roller och projektmedlemmar
 
-1. **Backend: sista finputsen**
-   - [ ] Validering vid registrering (lösenordslängd, e-postformat)
-   - [ ] Tydligt felmeddelande när en användare med kommentarer tas bort
-   - [ ] Uppdatera `.http`-filen med exempel som använder token
-2. **Frontend** (React + TypeScript + Tailwind)
-   - [ ] Grundsetup med Vite, routing och en API-klient som skickar med token
-   - [ ] Inloggning och registrering
-   - [ ] Projektlista och projektvy med issues och filter
-   - [ ] Issue-detalj med kommentarer och statusändring
-   - [ ] "Mina issues"
-   - [ ] Adminsidor för användare, roller och projektmedlemmar
-3. **Tester**
-   - [ ] xUnit-tester för services och behörighetsregler
-4. **Docker**
-   - [ ] Dockerfile för backenden
-   - [ ] `docker-compose.yml` som startar API och PostgreSQL
-5. **DevOps**
-   - [ ] GitHub Actions som bygger och testar vid varje push
-   - [ ] Deployment
+### Tester
+- [ ] xUnit-tester för services och behörighetsregler
+
+### Docker
+- [ ] Dockerfile för backenden
+- [ ] `docker-compose.yml` som startar API och PostgreSQL
+
+### DevOps
+- [ ] GitHub Actions som bygger och testar vid varje push
+- [ ] Deployment
 
 ## 🚀 Kom igång (backend)
 
-Krav: [.NET 10 SDK](https://dotnet.microsoft.com/), PostgreSQL och `dotnet-ef`, som installeras med `dotnet tool install --global dotnet-ef`.
+### Krav
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- PostgreSQL
+- `dotnet-ef`:
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+### Installation
 
 ```bash
 cd Backend/IssuePortal.Api
@@ -96,11 +106,15 @@ dotnet ef database update
 dotnet run
 ```
 
-Öppna sedan **http://localhost:5126/swagger** för att testa API:t:
+### Testa API:t i Swagger
+
+Öppna <http://localhost:5126/swagger> och:
 
 1. Registrera en användare med `POST /api/auth/register`.
-2. Logga in med `POST /api/auth/login` och kopiera `token`.
+2. Logga in med `POST /api/auth/login` och kopiera token.
 3. Klicka på **Authorize** och klistra in token.
+
+### Skapa den första admin-användaren
 
 Den första admin-användaren sätts direkt i databasen:
 
@@ -112,9 +126,7 @@ Logga sedan in igen, så att din token får den nya rollen.
 
 ## 📚 Dokumentation
 
-- [Kravspecifikation](Documentation/Requirements.md)
-- [Systemdesign](Documentation/SystemDesign.md)
-- [Databasdesign](Documentation/DatabaseDesign.md)
-- [API-design](Documentation/ApiDesign.md): alla endpoints, behörigheter och exempel
-
-> 🔨 **Work in Progress** — Projektet utvecklas fortfarande.
+- [Kravspecifikation](docs/kravspecifikation.md)
+- [Systemdesign](docs/systemdesign.md)
+- [Databasdesign](docs/databasdesign.md)
+- [API-design](docs/api-design.md): alla endpoints, behörigheter och exempel
