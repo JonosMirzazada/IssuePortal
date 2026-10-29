@@ -1,11 +1,17 @@
 const API_URL = "http://localhost:5126"
 
 export async function login(email: string, password: string): Promise<string> {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+  } catch {
+    throw new Error("Can't reach the server. Is the backend running?")
+  }
 
   if (!response.ok) {
     throw new Error("Invalid email or password.")
@@ -325,4 +331,16 @@ export async function addProjectMember(projectId: number, userId: number): Promi
   }
 
   return await response.json()
+}
+export async function deleteIssue(issueId: number): Promise<void> {
+  const token = localStorage.getItem("token")
+
+  const response = await fetch(`${API_URL}/api/issues/${issueId}`, {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Could not delete the issue (${response.status}).`)
+  }
 }

@@ -19,9 +19,9 @@ function LoginPage() {
     console.log("Logged in! Token:", token)
      localStorage.setItem("token", token)   // NEW: save the token in the browser
     navigate("/projects")                  
-  } catch {
-    setError("Invalid email or password.")    
-  }
+  } catch (err) {
+  setError(err instanceof Error ? err.message : "Login failed.")
+}
 }
 
   return (

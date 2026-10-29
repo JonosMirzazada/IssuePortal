@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { useParams, Link, useNavigate } from 'react-router'   // CHANGED: + useNavigate
 import {
   getIssue,
   createComment,
@@ -7,6 +7,7 @@ import {
   assignIssue,
   getCurrentUserId,
   getCurrentUserRole,
+  deleteIssue,
   type IssueDetails,
 } from '../api'
 
@@ -22,6 +23,8 @@ function IssueDetailPage() {
   const myId = getCurrentUserId()
   const role = getCurrentUserRole()
   const canEdit = role === "Developer" || role === "Admin"
+  const isAdmin = role === "Admin"     // NEW
+  const navigate = useNavigate()       // NEW
 
   useEffect(() => {
     if (!id) return
@@ -52,6 +55,19 @@ function IssueDetailPage() {
       setIssue({ ...issue, assignedUserId: userId })
     } catch (err) {
       setUpdateError(err instanceof Error ? err.message : "Could not assign the issue.")
+    }
+  }
+
+  // NEW: delete the issue, then go back to its project
+  async function handleDelete() {
+    if (!issue) return
+    if (!window.confirm(`Delete "${issue.title}"? This can't be undone.`)) return
+
+    try {
+      await deleteIssue(issue.id)
+      navigate(`/projects/${issue.projectId}`)
+    } catch (err) {
+      setUpdateError(err instanceof Error ? err.message : "Could not delete the issue.")
     }
   }
 
@@ -88,7 +104,6 @@ function IssueDetailPage() {
       <h1 className="mt-4 text-3xl font-bold">{issue.title}</h1>
 
       <div className="mt-2 flex items-center gap-3 text-sm">
-        {/* CHANGED: only Developers and Admins get the dropdown */}
         {canEdit ? (
           <select
             value={issue.status}
@@ -114,7 +129,6 @@ function IssueDetailPage() {
               : `Assigned to user #${issue.assignedUserId}`}
         </span>
 
-        {/* CHANGED: only Developers and Admins get the assign buttons */}
         {canEdit && (
           assignedToMe ? (
             <button onClick={() => handleAssign(null)} className="text-blue-600 hover:underline">
@@ -129,6 +143,16 @@ function IssueDetailPage() {
       </div>
 
       {updateError && <p className="mt-2 text-sm text-red-600">{updateError}</p>}
+
+      {/* NEW: only admins may delete */}
+      {isAdmin && (
+        <button
+          onClick={handleDelete}
+          className="mt-4 rounded border border-red-600 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
+        >
+          Delete issue
+        </button>
+      )}
 
       <p className="mt-4">{issue.description}</p>
 
