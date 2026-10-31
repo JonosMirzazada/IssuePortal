@@ -1,7 +1,6 @@
-import { login } from '../api'
-import { useNavigate } from 'react-router'
 import { useState } from 'react'
-
+import { useNavigate } from 'react-router'
+import { login } from '../api'
 
 function LoginPage() {
   const [email, setEmail] = useState("")
@@ -9,26 +8,23 @@ function LoginPage() {
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
-  // NEW: runs when the form is submitted
   async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault()
-  setError("")                                // NEW: clear any old error
+    e.preventDefault()
+    setError("")
 
-  try {
-    const token = await login(email, password)
-    console.log("Logged in! Token:", token)
-     localStorage.setItem("token", token)   // NEW: save the token in the browser
-    navigate("/projects")                  
-  } catch (err) {
-  setError(err instanceof Error ? err.message : "Login failed.")
-}
-}
+    try {
+      const token = await login(email, password)
+      localStorage.setItem("token", token)
+      navigate("/projects")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed.")
+    }
+  }
 
   return (
     <div className="max-w-sm">
       <h1 className="text-3xl font-bold">Log in</h1>
 
-      {/* NEW: onSubmit={handleSubmit} */}
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <div>
           <label className="block text-sm font-medium">Email</label>
@@ -39,7 +35,7 @@ function LoginPage() {
             className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
           />
         </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}   {/* ← NEW LINE HERE */}
+
         <div>
           <label className="block text-sm font-medium">Password</label>
           <input
@@ -49,6 +45,8 @@ function LoginPage() {
             className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
           />
         </div>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
