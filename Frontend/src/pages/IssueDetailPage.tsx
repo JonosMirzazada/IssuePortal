@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router'   // CHANGED: + useNavigate
+import { useParams, Link, useNavigate } from 'react-router'
 import {
   getIssue,
   createComment,
   updateIssueStatus,
+  updateIssuePriority,   
   assignIssue,
   getCurrentUserId,
   getCurrentUserRole,
@@ -23,8 +24,8 @@ function IssueDetailPage() {
   const myId = getCurrentUserId()
   const role = getCurrentUserRole()
   const canEdit = role === "Developer" || role === "Admin"
-  const isAdmin = role === "Admin"     // NEW
-  const navigate = useNavigate()       // NEW
+  const isAdmin = role === "Admin"
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!id) return
@@ -46,6 +47,19 @@ function IssueDetailPage() {
     }
   }
 
+  
+  async function handlePriorityChange(newPriority: string) {
+    setUpdateError("")
+    if (!issue) return
+
+    try {
+      await updateIssuePriority(issue, newPriority)
+      setIssue({ ...issue, priority: newPriority })
+    } catch (err) {
+      setUpdateError(err instanceof Error ? err.message : "Could not update the priority.")
+    }
+  }
+
   async function handleAssign(userId: number | null) {
     setUpdateError("")
     if (!issue) return
@@ -58,7 +72,6 @@ function IssueDetailPage() {
     }
   }
 
-  // NEW: delete the issue, then go back to its project
   async function handleDelete() {
     if (!issue) return
     if (!window.confirm(`Delete "${issue.title}"? This can't be undone.`)) return
@@ -117,7 +130,21 @@ function IssueDetailPage() {
         ) : (
           <span className="font-medium">{issue.status}</span>
         )}
-        <span className="text-gray-600">Priority: {issue.priority}</span>
+
+        {/* NEW: priority dropdown for Developers and Admins */}
+        {canEdit ? (
+          <select
+            value={issue.priority}
+            onChange={(e) => handlePriorityChange(e.target.value)}
+            className="rounded border border-gray-300 px-2 py-1"
+          >
+            <option value="Low">Low priority</option>
+            <option value="Medium">Medium priority</option>
+            <option value="High">High priority</option>
+          </select>
+        ) : (
+          <span className="text-gray-600">Priority: {issue.priority}</span>
+        )}
       </div>
 
       <div className="mt-2 flex items-center gap-3 text-sm">
@@ -144,7 +171,6 @@ function IssueDetailPage() {
 
       {updateError && <p className="mt-2 text-sm text-red-600">{updateError}</p>}
 
-      {/* NEW: only admins may delete */}
       {isAdmin && (
         <button
           onClick={handleDelete}
