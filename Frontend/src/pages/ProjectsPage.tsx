@@ -1,28 +1,29 @@
 import { useEffect, useState } from 'react'
-import { getProjects, createProject, type Project } from '../api'   // NEW: createProject
 import { Link } from 'react-router'
+import { getProjects, createProject, type Project } from '../api'
 
 function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [name, setName] = useState("")               // NEW
-  const [description, setDescription] = useState("") // NEW
-  const [error, setError] = useState("")             // NEW
+  const [loading, setLoading] = useState(true)          
+  const [name, setName] = useState("")
+  const [description, setDescription] = useState("")
+  const [error, setError] = useState("")
 
   useEffect(() => {
     getProjects()
       .then(data => setProjects(data))
-      .catch(() => console.log("Could not load projects"))
+      .catch(() => setError("Could not load projects."))
+      .finally(() => setLoading(false))                  
   }, [])
 
-  // NEW: runs when the "Create" button is clicked
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
 
     try {
       const newProject = await createProject(name, description)
-      setProjects([...projects, newProject])   // add it to the list
-      setName("")                               // empty the fields
+      setProjects([...projects, newProject])
+      setName("")
       setDescription("")
     } catch {
       setError("Could not create the project.")
@@ -33,7 +34,6 @@ function ProjectsPage() {
     <div>
       <h1 className="text-3xl font-bold">Projects</h1>
 
-      {/* NEW: the form */}
       <form onSubmit={handleSubmit} className="mt-6 flex max-w-sm flex-col gap-3">
         <input
           type="text"
@@ -60,23 +60,26 @@ function ProjectsPage() {
         </button>
       </form>
 
-      {projects.length === 0 && (
+      {/* NEW: three possible states */}
+      {loading ? (
+        <p className="mt-6 text-gray-600">Loading projects...</p>
+      ) : projects.length === 0 ? (
         <p className="mt-6 text-gray-600">You don't have any projects yet.</p>
+      ) : (
+        <ul className="mt-6 flex flex-col gap-2">
+          {projects.map(project => (
+            <li key={project.id}>
+              <Link
+                to={`/projects/${project.id}`}
+                className="block rounded border border-gray-300 p-4 hover:bg-gray-50"
+              >
+                <p className="font-medium">{project.name}</p>
+                <p className="text-sm text-gray-600">{project.description}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
-
-      <ul className="mt-6 flex flex-col gap-2">
-         {projects.map(project => (
-        <li key={project.id}>
-      <Link
-        to={`/projects/${project.id}`}
-        className="block rounded border border-gray-300 p-4 hover:bg-gray-50"
-      >
-        <p className="font-medium">{project.name}</p>
-        <p className="text-sm text-gray-600">{project.description}</p>
-      </Link>
-    </li>
-  ))}
-</ul>
     </div>
   )
 }
