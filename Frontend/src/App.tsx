@@ -6,13 +6,13 @@ import RegisterPage from './pages/RegisterPage'
 import IssueDetailPage from './pages/IssueDetailPage'
 import MyIssuesPage from './pages/MyIssuesPage'
 import AdminPage from './pages/AdminPage'
-import { getCurrentUserRole } from './api'
+import { getCurrentUserRole, isLoggedIn } from './api'  
 
 function App() {
   const navigate = useNavigate()
-  useLocation()                                     // re-check on every page change
-  const isAdmin = getCurrentUserRole() === "Admin"
-  const isLoggedIn = localStorage.getItem("token") !== null
+  useLocation()                                          
+  const loggedIn = isLoggedIn()                          
+  const isAdmin = loggedIn && getCurrentUserRole() === "Admin" 
 
   function handleLogout() {
     localStorage.removeItem("token")
@@ -21,9 +21,8 @@ function App() {
 
   return (
     <div className="p-8">
-      {/* CHANGED: different links depending on whether you're logged in */}
       <nav className="mb-6 flex gap-4">
-        {isLoggedIn ? (
+        {loggedIn ? (
           <>
             <Link to="/projects" className="text-blue-600 hover:underline">Projects</Link>
             <Link to="/my-issues" className="text-blue-600 hover:underline">My issues</Link>
@@ -46,19 +45,19 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/projects"
-          element={isLoggedIn ? <ProjectsPage /> : <Navigate to="/login" />}
+          element={loggedIn ? <ProjectsPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/projects/:id"
-          element={isLoggedIn ? <ProjectDetailPage /> : <Navigate to="/login" />}
+          element={loggedIn ? <ProjectDetailPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/issues/:id"
-          element={isLoggedIn ? <IssueDetailPage /> : <Navigate to="/login" />}
+          element={loggedIn ? <IssueDetailPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/my-issues"
-          element={isLoggedIn ? <MyIssuesPage /> : <Navigate to="/login" />}
+          element={loggedIn ? <MyIssuesPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/admin"

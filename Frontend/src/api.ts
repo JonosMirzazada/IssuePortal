@@ -58,6 +58,19 @@ export function getCurrentUserRole(): string | null {
   return data["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
 }
 
+export function isLoggedIn(): boolean {
+  const data = getTokenData()
+  if (!data) return false
+
+  const expiresAt = Number(data.exp) * 1000
+  if (Date.now() >= expiresAt) {
+    localStorage.removeItem("token")
+    return false
+  }
+
+  return true
+}
+
 // ─────────────────────────────────────────────
 // Projects
 // ─────────────────────────────────────────────
