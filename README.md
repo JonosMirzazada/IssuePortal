@@ -69,7 +69,7 @@ Jag bygger IssuePortal för att lära mig hela kedjan i ett riktigt system, steg
 ## 🗺️ Roadmap
 
 ### Backend: sista finputsen
-- [ ] Validering vid registrering (lösenordslängd, e-postformat)
+- [x] Validering vid registrering (lösenordslängd, e-postformat)
 - [ ] Tydligt felmeddelande när en användare med kommentarer tas bort
 - [ ] Uppdatera `.http`-filen med exempel som använder token
 
