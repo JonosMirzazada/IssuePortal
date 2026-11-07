@@ -70,7 +70,7 @@ Jag bygger IssuePortal för att lära mig hela kedjan i ett riktigt system, steg
 
 ### Backend: sista finputsen
 - [x] Validering vid registrering (lösenordslängd, e-postformat)
-- [ ] Tydligt felmeddelande när en användare med kommentarer tas bort
+- [x] Tydligt felmeddelande när en användare med kommentarer tas bort
 - [ ] Uppdatera `.http`-filen med exempel som använder token
 
 ### Frontend (React + TypeScript + Tailwind)
