@@ -67,52 +67,61 @@ public class UserService
     }
 
     public async Task<(UserDto? User, string? Error)> UpdateUserAsync(int id, UpdateUserDto dto)
-{
-    var existingUser = await _context.Users.FindAsync(id);
-
-    if (existingUser == null)
     {
-        return (null, null);
+        var existingUser = await _context.Users.FindAsync(id);
+
+        if (existingUser == null)
+        {
+            return (null, null);
+        }
+
+        var emailTaken = await _context.Users
+            .AnyAsync(u => u.Email == dto.Email && u.Id != id);
+
+        if (emailTaken)
+        {
+            return (null, "Email already exists.");
+        }
+
+        existingUser.Name = dto.Name;
+        existingUser.Email = dto.Email;
+
+        await _context.SaveChangesAsync();
+
+        return (new UserDto
+        {
+            Id = existingUser.Id,
+            Name = existingUser.Name,
+            Email = existingUser.Email,
+            Role = existingUser.Role,
+            CreatedAt = existingUser.CreatedAt,
+            AssignedIssues = new List<UserIssueDto>()
+        }, null);
     }
 
-    var emailTaken = await _context.Users
-        .AnyAsync(u => u.Email == dto.Email && u.Id != id);
-
-    if (emailTaken)
-    {
-        return (null, "Email already exists.");
-    }
-
-    existingUser.Name = dto.Name;
-    existingUser.Email = dto.Email;
-
-    await _context.SaveChangesAsync();
-
-    return (new UserDto
-    {
-        Id = existingUser.Id,
-        Name = existingUser.Name,
-        Email = existingUser.Email,
-        Role = existingUser.Role,
-        CreatedAt = existingUser.CreatedAt,
-        AssignedIssues = new List<UserIssueDto>()
-    }, null);
-}
-
-    public async Task<bool> DeleteUserAsync(int id)
+    public async Task<(bool Deleted, string? Error)> DeleteUserAsync(int id)
     {
         var user = await _context.Users.FindAsync(id);
 
         if (user == null)
         {
-            return false;
+            return (false, null);
+        }
+
+        // The database won't allow deleting a user who has comments
+        // (Comment -> User is Restrict), so check first and give a clear reason.
+        var hasComments = await _context.Comments.AnyAsync(c => c.UserId == id);
+
+        if (hasComments)
+        {
+            return (false, "This user has written comments and cannot be deleted.");
         }
 
         _context.Users.Remove(user);
 
         await _context.SaveChangesAsync();
 
-        return true;
+        return (true, null);
     }
 
     public async Task<(UserDto? User, string? Error)> UpdateRoleAsync(int id, UpdateUserRoleDto dto, CurrentUser currentUser)

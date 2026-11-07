@@ -40,35 +40,40 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
-public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
-{
-    var result = await _userService.UpdateUserAsync(id, dto);
-
-    if (result.User == null)
+    public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
     {
-        if (result.Error == null)
+        var result = await _userService.UpdateUserAsync(id, dto);
+
+        if (result.User == null)
         {
-            return NotFound();
+            if (result.Error == null)
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Error);
         }
 
-        return BadRequest(result.Error);
+        return Ok(result.User);
     }
 
-    return Ok(result.User);
-}
-
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteUser(int id)
-{
-    var deleted = await _userService.DeleteUserAsync(id);
-
-    if (!deleted)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(int id)
     {
-        return NotFound();
-    }
+        var result = await _userService.DeleteUserAsync(id);
 
-    return NoContent();
-}
+        if (!result.Deleted)
+        {
+            if (result.Error == null)
+            {
+                return NotFound();
+            }
+
+            return BadRequest(result.Error);
+        }
+
+        return NoContent();
+    }
 
     [HttpPut("{id}/role")]
     public async Task<IActionResult> UpdateUserRole(int id, UpdateUserRoleDto dto)
