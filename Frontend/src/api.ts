@@ -34,7 +34,15 @@ export async function register(name: string, email: string, password: string): P
 
   if (!response.ok) {
     const data = await response.json()
-    throw new Error(data.message)
+
+    // Validation errors: { errors: { Email: ["..."], Password: ["..."] } }
+    if (data.errors) {
+      const messages = Object.values(data.errors).flat() as string[]
+      throw new Error(messages.join(" "))
+    }
+
+    // Other errors: { message: "Email already exists." }
+    throw new Error(data.message ?? "Registration failed.")
   }
 }
 
