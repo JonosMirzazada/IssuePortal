@@ -1,43 +1,108 @@
-@IssuePortal.Api_HostAddress = http://localhost:5126
+@baseUrl = http://localhost:5126
 
-### Create a new issue
-POST http://localhost:5126/api/issues
+### ─────────────────────────────────────────────
+### 1. Log in (run this first!)
+### Saves the token automatically for the requests below.
+### ─────────────────────────────────────────────
+
+# @name login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "title": "Login fungerar inte",
-  "description": "Användaren kan inte logga in.",
-  "projectId": 1
+  "email": "jonos.frontend@example.com",
+  "password": "Test1234!"
 }
 
+###
+
+@token = {{login.response.body.token}}
+
+### ─────────────────────────────────────────────
+### 2. Register a new user (no token needed)
+### ─────────────────────────────────────────────
+
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "Test1234!"
+}
+
+### ─────────────────────────────────────────────
+### 3. Projects
+### ─────────────────────────────────────────────
+
+### Get my projects
+GET {{baseUrl}}/api/projects
+Authorization: Bearer {{token}}
+
+### Get one project, with its issues
+GET {{baseUrl}}/api/projects/11
+Authorization: Bearer {{token}}
+
+### Create a project
+POST {{baseUrl}}/api/projects
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Created from .http",
+  "description": "Testing the API from VS Code"
+}
+
+### Get a project's members
+GET {{baseUrl}}/api/projects/11/members
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 4. Issues
+### ─────────────────────────────────────────────
+
+### Get issues assigned to me
+GET {{baseUrl}}/api/issues?assignedToMe=true
+Authorization: Bearer {{token}}
+
+### Get open, high-priority issues in project 11
+GET {{baseUrl}}/api/issues?projectId=11&status=Open&priority=High
+Authorization: Bearer {{token}}
+
+### Create an issue
+POST {{baseUrl}}/api/issues
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "projectId": 11,
+  "title": "Created from .http",
+  "description": "Testing issue creation",
+  "priority": "High"
+}
+
+### ─────────────────────────────────────────────
+### 5. Comments
+### ─────────────────────────────────────────────
+
+### Add a comment (change issueId to a real issue)
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "issueId": 1,
+  "content": "Comment from the .http file"
+}
+
+### ─────────────────────────────────────────────
+### 6. Users (Admin only)
+### ─────────────────────────────────────────────
 
 ### Get all users
-GET http://localhost:5126/api/users
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
 
-
-### Create a new user
-POST http://localhost:5126/api/users
-Content-Type: application/json
-
-{
-  "name": "Jonos",
-  "email": "jonos@example.com"
-}
-
-
-### Get user by ID
-GET http://localhost:5126/api/users/1
-
-### Update user
-PUT http://localhost:5126/api/users/1
-Content-Type: application/json
-
-{
-  "name": "Jonos Mirzazada",
-  "email": "jonos.mirzazada@example.com"
-}
-
-
-
-### Delete user
-DELETE http://localhost:5126/api/users/1
+### Try to delete a user who has comments (expect 400)
+DELETE {{baseUrl}}/api/users/5
+Authorization: Bearer {{token}}
