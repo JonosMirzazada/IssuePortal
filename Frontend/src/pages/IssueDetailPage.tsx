@@ -4,13 +4,14 @@ import {
   getIssue,
   createComment,
   updateIssueStatus,
-  updateIssuePriority,   
+  updateIssuePriority,
   assignIssue,
   getCurrentUserId,
   getCurrentUserRole,
   deleteIssue,
   type IssueDetails,
 } from '../api'
+import { StatusBadge, PriorityBadge } from '../components/Badges'   // NEW
 
 function IssueDetailPage() {
   const { id } = useParams()
@@ -47,7 +48,6 @@ function IssueDetailPage() {
     }
   }
 
-  
   async function handlePriorityChange(newPriority: string) {
     setUpdateError("")
     if (!issue) return
@@ -110,113 +110,163 @@ function IssueDetailPage() {
 
   return (
     <div>
+      {/* Back link, title and badges */}
       <Link to={`/projects/${issue.projectId}`} className="text-sm text-blue-600 hover:underline">
         ← Back to project
       </Link>
-
-      <h1 className="mt-4 text-3xl font-bold">{issue.title}</h1>
-
-      <div className="mt-2 flex items-center gap-3 text-sm">
-        {canEdit ? (
-          <select
-            value={issue.status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1"
-          >
-            <option value="Open">Open</option>
-            <option value="InProgress">In progress</option>
-            <option value="Closed">Closed</option>
-          </select>
-        ) : (
-          <span className="font-medium">{issue.status}</span>
-        )}
-
-        {/* NEW: priority dropdown for Developers and Admins */}
-        {canEdit ? (
-          <select
-            value={issue.priority}
-            onChange={(e) => handlePriorityChange(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1"
-          >
-            <option value="Low">Low priority</option>
-            <option value="Medium">Medium priority</option>
-            <option value="High">High priority</option>
-          </select>
-        ) : (
-          <span className="text-gray-600">Priority: {issue.priority}</span>
-        )}
+      <h1 className="mt-3 text-3xl font-bold text-gray-900">{issue.title}</h1>
+      <div className="mt-3 flex gap-2">
+        <StatusBadge status={issue.status} />
+        <PriorityBadge priority={issue.priority} />
       </div>
 
-      <div className="mt-2 flex items-center gap-3 text-sm">
-        <span className="text-gray-600">
-          {assignedToMe
-            ? "Assigned to you"
-            : issue.assignedUserId === null
-              ? "Unassigned"
-              : `Assigned to user #${issue.assignedUserId}`}
-        </span>
+      {/* Two columns on big screens */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
 
-        {canEdit && (
-          assignedToMe ? (
-            <button onClick={() => handleAssign(null)} className="text-blue-600 hover:underline">
-              Unassign
-            </button>
-          ) : (
-            <button onClick={() => handleAssign(myId)} className="text-blue-600 hover:underline">
-              Assign to me
-            </button>
-          )
-        )}
-      </div>
+        {/* LEFT: description + comments */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
 
-      {updateError && <p className="mt-2 text-sm text-red-600">{updateError}</p>}
-
-      {isAdmin && (
-        <button
-          onClick={handleDelete}
-          className="mt-4 rounded border border-red-600 px-3 py-1 text-sm text-red-600 hover:bg-red-50"
-        >
-          Delete issue
-        </button>
-      )}
-
-      <p className="mt-4">{issue.description}</p>
-
-      <h2 className="mt-8 text-xl font-semibold">Comments</h2>
-
-      {issue.comments.length === 0 && (
-        <p className="mt-2 text-gray-600">No comments yet.</p>
-      )}
-
-      <ul className="mt-4 flex flex-col gap-2">
-        {issue.comments.map(comment => (
-          <li key={comment.id} className="rounded border border-gray-300 p-4">
-            <p className="text-sm text-gray-600">
-              {comment.userName} · {new Date(comment.createdAt).toLocaleString()}
+          {/* Description card */}
+          <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Description</h2>
+            <p className="mt-2 whitespace-pre-wrap text-gray-800">
+              {issue.description || "No description."}
             </p>
-            <p className="mt-1">{comment.content}</p>
-          </li>
-        ))}
-      </ul>
+          </section>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex max-w-lg flex-col gap-3">
-        <textarea
-          placeholder="Write a comment..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={3}
-          className="rounded border border-gray-300 px-3 py-2"
-        />
+          {/* Comments */}
+          <section>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Comments <span className="text-gray-500">({issue.comments.length})</span>
+            </h2>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
+            {issue.comments.length === 0 ? (
+              <p className="mt-3 text-gray-600">No comments yet. Be the first!</p>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-3">
+                {issue.comments.map(comment => (
+                  <li key={comment.id} className="flex gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800">
+                      {comment.userName.charAt(0).toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm">
+                        <span className="font-medium text-gray-900">{comment.userName}</span>
+                        <span className="text-gray-500"> · {new Date(comment.createdAt).toLocaleString()}</span>
+                      </p>
+                      <p className="mt-1 whitespace-pre-wrap text-gray-800">{comment.content}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-        <button
-          type="submit"
-          className="self-start rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-        >
-          Add comment
-        </button>
-      </form>
+            {/* Comment form card */}
+            <form
+              onSubmit={handleSubmit}
+              className="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+            >
+              <textarea
+                placeholder="Write a comment..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={3}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+              {formError && <p className="mt-2 text-sm text-red-600">{formError}</p>}
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="submit"
+                  className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                >
+                  Add comment
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        {/* RIGHT: details sidebar */}
+        <aside className="h-fit rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">Details</h2>
+
+          <dl className="mt-4 flex flex-col gap-4 text-sm">
+            {/* Status */}
+            <div>
+              <dt className="text-gray-500">Status</dt>
+              <dd className="mt-1">
+                {canEdit ? (
+                  <select
+                    value={issue.status}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="Open">Open</option>
+                    <option value="InProgress">In progress</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                ) : (
+                  <StatusBadge status={issue.status} />
+                )}
+              </dd>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <dt className="text-gray-500">Priority</dt>
+              <dd className="mt-1">
+                {canEdit ? (
+                  <select
+                    value={issue.priority}
+                    onChange={(e) => handlePriorityChange(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-2 py-1.5 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                ) : (
+                  <PriorityBadge priority={issue.priority} />
+                )}
+              </dd>
+            </div>
+
+            {/* Assignee */}
+            <div>
+              <dt className="text-gray-500">Assignee</dt>
+              <dd className="mt-1 text-gray-900">
+                {assignedToMe
+                  ? "You"
+                  : issue.assignedUserId === null
+                    ? "Nobody yet"
+                    : `User #${issue.assignedUserId}`}
+              </dd>
+              {canEdit && (
+                <button
+                  onClick={() => handleAssign(assignedToMe ? null : myId)}
+                  className="mt-2 w-full rounded-md border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-100"
+                >
+                  {assignedToMe ? "Unassign me" : "Assign to me"}
+                </button>
+              )}
+            </div>
+          </dl>
+
+          {updateError && <p className="mt-4 text-sm text-red-600">{updateError}</p>}
+
+          {/* Danger zone, admins only */}
+          {isAdmin && (
+            <div className="mt-5 border-t border-gray-200 pt-4">
+              <button
+                onClick={handleDelete}
+                className="w-full rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              >
+                Delete issue
+              </button>
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   )
 }
